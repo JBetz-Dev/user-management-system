@@ -15,11 +15,7 @@ public class UserDAO {
             ps.setString(3, user.getPassword());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                int userId =  rs.getInt("id");
-                String username = rs.getString("username");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-                return new User(userId, username, email, password);
+                return mapResultSetToUser(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -33,11 +29,7 @@ public class UserDAO {
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM users");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                int userId =  rs.getInt("id");
-                String username = rs.getString("username");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-                users.add(new User(userId, username, email, password));
+                users.add(mapResultSetToUser(rs));
             }
             return users;
         } catch (SQLException e) {
@@ -52,11 +44,7 @@ public class UserDAO {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                int userId =  rs.getInt("id");
-                String username = rs.getString("username");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-                return new User(userId, username, email, password);
+                return mapResultSetToUser(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -92,5 +80,13 @@ public class UserDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private User mapResultSetToUser(ResultSet rs) throws SQLException {
+        int id = rs.getInt("id");
+        String username = rs.getString("username");
+        String email = rs.getString("email");
+        String password = rs.getString("password");
+        return new User(id, username, email, password);
     }
 }
