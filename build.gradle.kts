@@ -14,7 +14,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
-    implementation("org.springframework.security:spring-security-crypto:6.4.3")
+    implementation("org.springframework.security:spring-security-crypto:6.4.4")
+    implementation("commons-logging:commons-logging:1.2")
 }
 
 tasks.test {
