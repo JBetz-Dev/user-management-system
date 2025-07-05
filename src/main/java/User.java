@@ -3,21 +3,21 @@ public class User {
     private int id;
     private String username;
     private String email;
-    private String password;
+    private String passwordHash;
 
     // Used for creating new Users prior to DB save
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
-        this.password = password;
+        passwordHash = PasswordUtil.hashPassword(password);
     }
 
     // Used to reinstantiate existing Users from the DB
-    public User(int id, String username, String email, String password) {
+    public User(int id, String username, String email, String passwordHash) {
         this.id = id;
         this.username = username;
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
     }
 
     public void setUsername(String username) {
@@ -28,8 +28,10 @@ public class User {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String password) {
+        if (verifyPassword(password)) {
+            this.passwordHash = PasswordUtil.hashPassword(password);
+        }
     }
 
     public int getId() {
@@ -44,7 +46,11 @@ public class User {
         return email;
     }
 
-    public String getPassword() {
-        return password;
+    protected String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public boolean verifyPassword(String password) {
+        return PasswordUtil.verifyPassword(password, passwordHash);
     }
 }

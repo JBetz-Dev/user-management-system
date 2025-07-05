@@ -8,8 +8,12 @@ public class UserService {
         return userDAO.insertUser(user);
     }
 
-    public boolean changeUsername(User user, String username) {
-        return userDAO.updateUsername(user, username);
+    public boolean changeUsername(User user, String username, String password) {
+        if (user.verifyPassword(password)) {
+            return userDAO.updateUsername(user, username);
+        } else {
+            return false;
+        }
     }
 
     public List<User> getAllUsers() {
@@ -18,6 +22,10 @@ public class UserService {
 
     public User getUserById(int id) {
         return userDAO.getUserById(id);
+    }
+
+    public User getUserByUsername(String username) {
+        return userDAO.getUserByUsername(username);
     }
 
     public boolean removeUserById(int id) {

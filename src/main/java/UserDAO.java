@@ -12,7 +12,7 @@ public class UserDAO {
             );
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
+            ps.setString(3, user.getPasswordHash());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return mapResultSetToUser(rs);
@@ -42,6 +42,20 @@ public class UserDAO {
         try (Connection conn = dbc.getConnection()) {
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
             ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToUser(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public User getUserByUsername(String username) {
+        try (Connection conn = dbc.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE username = ?");
+            ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return mapResultSetToUser(rs);

@@ -20,14 +20,6 @@ public class Main {
             System.out.println("Error while creating User!");
         }
 
-        // Test updating username
-        String newUsername = "CoolerGuy";
-        if (us.changeUsername(newUser, newUsername)) {
-            System.out.println("Username changed successfully!");
-        } else {
-            System.out.println("Error while changing username!");
-        }
-
         // Test getting all users
         List<User> users = us.getAllUsers();
         System.out.println("List of Users:");
@@ -46,7 +38,6 @@ public class Main {
         } else {
             System.out.println("Error while removing user!");
         }
-
 
     }
 }
