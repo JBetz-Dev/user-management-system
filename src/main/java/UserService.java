@@ -10,7 +10,17 @@ public class UserService {
 
     public boolean changeUsername(User user, String username, String password) {
         if (user.verifyPassword(password)) {
+            user.setUsername(username);
             return userDAO.updateUsername(user, username);
+        } else {
+            return false;
+        }
+    }
+
+    public boolean changePassword(User user, String oldPassword, String newPassword) {
+        if (user.verifyPassword(oldPassword)) {
+            user.setPasswordHash(PasswordUtil.hashPassword(newPassword));
+            return userDAO.updatePassword(user, newPassword);
         } else {
             return false;
         }

@@ -82,6 +82,21 @@ public class UserDAO {
         return false;
     }
 
+    public boolean updatePassword(User user, String password) {
+        try (Connection conn = dbc.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE users SET password = ? WHERE id = ?"
+            );
+            ps.setString(1, password);
+            ps.setInt(2, user.getId());
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean deleteUserById(int id) {
         try (Connection conn = dbc.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(

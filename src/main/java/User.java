@@ -29,9 +29,7 @@ public class User {
     }
 
     public void setPasswordHash(String password) {
-        if (verifyPassword(password)) {
-            this.passwordHash = PasswordUtil.hashPassword(password);
-        }
+        this.passwordHash = PasswordUtil.hashPassword(password);
     }
 
     public int getId() {
