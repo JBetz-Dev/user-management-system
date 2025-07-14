@@ -1,52 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Test Page</title>
-</head>
-<body>
-<h1>Test Page</h1>
-<form id="userForm">
-    <label for="username">Enter Your Name: </label>
-    <input id="username" type="text">
-    <label for="email">Enter Your Email Address: </label>
-    <input id="email" type="email">
-    <label for="password">Enter Your Password: </label>
-    <input id="password" type="password">
+    <head>
+        <meta charset="UTF-8">
+        <title>Test Page</title>
+    </head>
+    <body>
+        <h1>Test Page</h1>
+        <form id="userForm">
+            <label for="username">Enter Your Name: </label>
+            <input id="username" type="text">
+            <label for="email">Enter Your Email Address: </label>
+            <input id="email" type="email">
+            <label for="password">Enter Your Password: </label>
+            <input id="password" type="password">
 
-    <button type="submit">Submit</button>
-</form>
+            <button type="submit">Submit</button>
+        </form>
 
-<script>
-    document.getElementById('userForm').addEventListener('submit', (e) => {
-        e.preventDefault();
+        <div id="userListContainer">
+            <button id="showUsers">Show All Users</button>
+        </div>
 
-        const userData = {
-            username: document.getElementById('username').value,
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
-        };
-
-        console.log(JSON.stringify(userData));
-
-        fetch('http://localhost:9000/submit', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(userData)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Response not OK');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Success: ', data);
-            })
-            .catch(error => {
-                console.log('Error: ', error);
-            });
-    });
-</script>
-</body>
+    <script src="/src/scripts.js"></script>
+    </body>
 </html>
