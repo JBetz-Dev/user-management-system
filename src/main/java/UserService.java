@@ -3,8 +3,7 @@ import java.util.List;
 public class UserService {
     private final UserDAO userDAO = new UserDAO();
 
-    public User registerNewUser(String username, String email, String password) {
-        User user = new User(username, email, password);
+    public User registerNewUser(User user) {
         return userDAO.insertUser(user);
     }
 
