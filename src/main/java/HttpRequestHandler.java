@@ -21,11 +21,9 @@ public class HttpRequestHandler {
             request = new HttpRequest(input);
             String pathString = request.getPath();
 
-
-
             if (pathString.contains("users")) {
-//                response = (new UserHandler(request)).getResponse();
                 UserHandler userHandler = new UserHandler(request);
+                response = userHandler.getResponse();
             } else {
                 FileHandler fileHandler = new FileHandler(request);
                 response = fileHandler.getResponse();
