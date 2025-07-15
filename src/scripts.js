@@ -9,7 +9,7 @@ document.getElementById('userForm').addEventListener('submit', (e) => {
 
     console.log(JSON.stringify(userData));
 
-    fetch('http://localhost:9000/users', {
+    fetch('http://localhost:9000/users/', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(userData)
