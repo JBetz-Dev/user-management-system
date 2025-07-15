@@ -51,4 +51,14 @@ public class User {
     public boolean verifyPassword(String password) {
         return PasswordUtil.verifyPassword(password, passwordHash);
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+               "id=" + id +
+               ", username='" + username + '\'' +
+               ", email='" + email + '\'' +
+               ", passwordHash='" + passwordHash + '\'' +
+               '}';
+    }
 }
