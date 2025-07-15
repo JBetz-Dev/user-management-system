@@ -80,4 +80,12 @@ public class HttpRequest {
     public String getBody() {
         return body;
     }
+
+    public String toString() {
+        return String.format("""
+                %s %s %s
+                %s
+                %s
+                """, method, path, version, headers, body);
+    }
 }

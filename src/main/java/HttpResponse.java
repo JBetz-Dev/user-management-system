@@ -54,4 +54,8 @@ public class HttpResponse {
     public String getBody() {
         return body;
     }
+
+    public String toString() {
+        return generateResponse();
+    }
 }
