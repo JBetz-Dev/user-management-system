@@ -1,33 +1,22 @@
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class UserHandler {
-    private HttpRequest request;
-    private HttpResponse response;
-    private UserService userService;
+    private final HttpRequest request;
+    private final HttpResponse response;
+    private final UserService userService = new UserService();
 
     public UserHandler(HttpRequest request) {
         this.request = request;
-        userService = new UserService();
-        processRequest();
+        response = new HttpResponse();
     }
 
-    private void processRequest() {
+    public HttpResponse getResponse() {
+        response.setVersion(request.getVersion());
+        response.setHeader("Content-Type", "application/json");
+
         String method = request.getMethod();
         String pathString = request.getPath();
-        String version = request.getVersion();
-        String requestBody = request.getBody();
-        int statusCode = 400;
-        String reasonPhrase = "Bad Request";
-        String responseBody = "Bad Request";
-        String contentType = "application/json";
 
-        System.out.println("HTTP Request:\n" + request);
-        // Trim trailing "/" for standardization
         if (pathString.endsWith("/")) {
             pathString = pathString.substring(0, pathString.length() - 1);
         }
@@ -35,57 +24,52 @@ public class UserHandler {
         String[] segments = pathString.split("/");
         int segmentsLength = segments.length;
 
+        // Add additional endpoints
         if (segmentsLength == 2 && method.equals("GET")) {
-            System.out.println("getAllUsers()");
-            StringBuilder sb = new StringBuilder();
-            sb.append("[");
+            handleGetAllUsers();
+        } else if (segmentsLength == 2 && method.equals("POST")) {
+            handleRegisterNewUser();
+        } else {
+            response.setStatusCode(404);
+            response.setReasonPhrase("Not Found");
+        }
+
+        return response;
+    }
+
+    private void handleGetAllUsers() {
+        List<User> users = userService.getAllUsers();
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("[");
+        if (!users.isEmpty()) {
             for (User user : userService.getAllUsers()) {
                 String userJson = JsonUserParser.mapUserToJson(user);
                 sb.append(userJson).append(",");
             }
+
             sb.deleteCharAt(sb.length() - 1);
-            sb.append("]");
-            statusCode = 200;
-            reasonPhrase = "OK";
-            contentType = "application/json";
-            responseBody = sb.toString();
-        } else if (segmentsLength == 2 && method.equals("POST")) {
-            System.out.println("registerNewUser()");
-            User user = JsonUserParser.mapJsonToUser(requestBody);
-            user = userService.registerNewUser(user);
-            if (user != null) {
-                responseBody = JsonUserParser.mapUserToJson(user);
-                statusCode = 200;
-                reasonPhrase = "OK";
-                contentType = "application/json";
-            }
         }
+        sb.append("]");
 
-//        else if (segmentsLength == 3 && segments[1].equals("id") && method.equals("GET")) {
-//            System.out.println("getUserById()");
-//        } else if (segmentsLength == 3 && segments[1].equals("id") && method.equals("DELETE")) {
-//            System.out.println("removeUserById()");
-//        } else if (segmentsLength == 3 && segments[1].equals("username") && method.equals("GET")) {
-//            System.out.println("getUserByUsername()");
-//        }
-
-        LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
-        String formattedDateTime = dateTime.atZone(ZoneId.of("UTC")).format(dateTimeFormatter);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", contentType);
-
-        byte[] bodyBytes =  responseBody.getBytes(StandardCharsets.UTF_8);
-        headers.put("Content-Length", String.valueOf(bodyBytes.length));
-        headers.put("Connection", "close");
-        headers.put("Date", formattedDateTime);
-
-        response = new HttpResponse(version, statusCode, reasonPhrase, headers, responseBody);
+        response.setBody(sb.toString());
+        response.setStatusCode(200);
+        response.setReasonPhrase("OK");
     }
 
-    public HttpResponse getResponse() {
-        System.out.println("HTTP Response:\n" + response);
-        return response;
+    private void handleRegisterNewUser() {
+        String requestBody = request.getBody();
+
+        User user = JsonUserParser.mapJsonToUser(requestBody);
+        user = userService.registerNewUser(user);
+        if (user != null) {
+            response.setBody(JsonUserParser.mapUserToJson(user));
+            response.setStatusCode(201);
+            response.setReasonPhrase("Created");
+        } else {
+            response.setStatusCode(409);
+            response.setReasonPhrase("Conflict");
+            response.setBody("{\"Error\": \"User already exists\"}");
+        }
     }
 }

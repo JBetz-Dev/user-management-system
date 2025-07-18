@@ -5,34 +5,11 @@ public class HttpResponse {
     private String version;
     private int statusCode;
     private String reasonPhrase;
-    private final Map<String, String> headers;
+    private Map<String, String> headers;
     private String body;
 
-    public HttpResponse(String version,  int statusCode, String reasonPhrase,
-                        Map<String, String> headers, String body) {
-        this.version = version;
-        this.statusCode = statusCode;
-        this.reasonPhrase = reasonPhrase;
-        this.headers = new HashMap<>(headers);
-        this.body = body;
-    }
-
-    public String generateResponse() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(version)
-                .append(" ")
-                .append(statusCode)
-                .append(" ")
-                .append(reasonPhrase)
-                .append("\n");
-        headers.forEach((k,v) -> stringBuilder.append(k)
-                .append(": ")
-                .append(v)
-                .append("\n"));
-        stringBuilder.append("\n")
-                .append(body);
-
-        return stringBuilder.toString();
+    public HttpResponse() {
+        headers = new HashMap<>();
     }
 
     public String getVersion() {
@@ -51,11 +28,51 @@ public class HttpResponse {
         return headers;
     }
 
+    public String getHeader(String key) {
+        return headers.get(key);
+    }
+
     public String getBody() {
         return body;
     }
 
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public void setReasonPhrase(String reasonPhrase) {
+        this.reasonPhrase = reasonPhrase;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+    public void setHeader(String key, String value) {
+        headers.put(key, value);
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
     public String toString() {
-        return generateResponse();
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(version).append(" ")
+                .append(statusCode).append(" ")
+                .append(reasonPhrase).append("\n");
+        headers.forEach((k, v) -> sb.append(k)
+                .append(": ")
+                .append(v)
+                .append("\n"));
+        sb.append("\n")
+                .append(body);
+
+        return sb.toString();
     }
 }
