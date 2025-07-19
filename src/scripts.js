@@ -1,55 +1,59 @@
-document.getElementById('userForm').addEventListener('submit', (e) => {
-    e.preventDefault();
+const loginForm = document.querySelector('#loginForm');
+const registerForm = document.querySelector('#registerForm');
+const loginButton = document.querySelector('#loginButton');
+const registerButton = document.querySelector('#registerButton');
 
-    const userData = {
-        username: document.getElementById('username').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
-    };
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    console.log(JSON.stringify(userData));
+        const userData = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+        };
 
-    fetch('http://localhost:9000/users/', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(userData)
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Response not OK');
+        fetch('http://localhost:9000/users/login/', {
+            method: 'POST',
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(userData),
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error authenticating user.');
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Success: ', data);
-        })
-        .catch(error => {
-            console.log('Error: ', error);
+        }).then(data => {
+            console.log('Success: ', data); // placeholder
+        }).catch(error => {
+            console.log("Error: ", error); // placeholder
         });
-});
+    });
+}
 
-document.getElementById('userListContainer').addEventListener('click', (e) => {
-    e.preventDefault();
+if (registerForm) {
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    fetch('http://localhost:9000/users', {
-        method: 'GET',
-        headers: {'Content-Type': 'application/json'}
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Response not OK');
+        const userData = {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        }
+
+        fetch('http://localhost:9000/users/register/', {
+            method: 'POST',
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(userData),
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error registering user.');
             }
-            console.log(JSON.stringify(response));
-            return response.json();
+        }).then(data => {
+            console.log('Success: ', data); // placeholder
+        }).catch(error => {
+            console.log("Error: ", error); // placeholder
         })
-        .then(data => {
-            console.log('Success: ', data);
-        })
-        .catch(error => {
-            console.log('Error: ', error);
-        });
-
-    // let userList = document.createElement('ul');
-    // userList.appendChild(document.createElement('li').append(document.createTextNode(user)));
-
-});
+    })
+}

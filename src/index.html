@@ -2,25 +2,19 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Test Page</title>
+        <title>Login</title>
+        <link rel="stylesheet" href="/src/styles.css">
     </head>
     <body>
-        <h1>Test Page</h1>
-        <form id="userForm">
-            <label for="username">Enter Your Name: </label>
-            <input id="username" type="text">
-            <label for="email">Enter Your Email Address: </label>
-            <input id="email" type="email">
-            <label for="password">Enter Your Password: </label>
-            <input id="password" type="password">
+        <div id="welcomeContainer">
+            <h2>Welcome to the User Management Test Site</h2>
 
-            <button type="submit">Submit</button>
-        </form>
-
-        <div id="userListContainer">
-            <button id="showUsers">Show All Users</button>
+                <h3>Select One of the Following:</h3>
+                <div id="buttonContainer">
+                    <button id="loginButton"><a href="/src/login.html">Login</a></button>
+                    <button id="registerButton"><a href="/src/register.html">Register</a></button>
+                </div>
         </div>
-
     <script src="/src/scripts.js"></script>
     </body>
 </html>
