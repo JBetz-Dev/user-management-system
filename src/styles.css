@@ -43,7 +43,11 @@ a:hover {
 
 #buttonContainer button {
     width: 125px;
-    height: 40px;
+    height: 35px;
     margin: 10px;
     padding: 5px;
+}
+
+.hidden {
+    display: none;
 }

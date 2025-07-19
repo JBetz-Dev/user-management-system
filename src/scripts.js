@@ -1,7 +1,7 @@
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const changePasswordButton = document.getElementById('changePasswordButton');
-const listAllUsersButton = document.getElementById('listAllUsersButton');
+const listUsersButton = document.getElementById('listUsersButton');
 
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -23,7 +23,7 @@ if (loginForm) {
                 throw new Error("Error authenticating user.");
             }
         }).catch(error => {
-            console.log("Error: ", error); // placeholder
+            generateLoginError();
         });
     });
 }
@@ -44,35 +44,73 @@ if (registerForm) {
             body: JSON.stringify(userData),
         }).then(response => {
             if (response.ok) {
-                return response.json();
+                window.location.href = "user-area.html"
             } else {
                 throw new Error("Error registering user.");
             }
-        }).then(data => {
-            console.log("Success: ", data); // placeholder
-        }).catch(error => {
-            console.log("Error: ", error); // placeholder
+        }).catch(() => {
+            generateRegistrationError();
         })
     })
 }
 
-if (listAllUsersButton) {
-    listAllUsersButton.addEventListener('click', (e) => {
+if (listUsersButton) {
+    listUsersButton.addEventListener('click', (e) => {
         e.preventDefault();
 
-        fetch("http://localhost:9000/users/", {
-            method: "GET",
-            headers: {"Accept": "application/json"},
-        }).then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error("Error fetching users list");
-            }
-        }).then(data => {
-            console.log("Success: ", data);
-        }).catch(error => {
-            console.log("Error: ", error);
-        })
+        const userListContainer = document.getElementById('userListContainer');
+
+        if (userListContainer.classList.contains("hidden")) {
+            fetch("http://localhost:9000/users/", {
+                method: "GET",
+                headers: {"Accept": "application/json"},
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Error fetching users list");
+                }
+            }).then(data => {
+                populateUsersList(data);
+                userListContainer.classList.remove("hidden");
+                listUsersButton.textContent = "Hide Users";
+            }).catch(error => {
+                console.log("Error: ", error);
+            })
+        } else {
+            userListContainer.replaceChildren();
+            userListContainer.classList.add("hidden");
+            listUsersButton.textContent = "Show Users";
+        }
     })
+}
+
+function generateLoginError() {
+    const loginErrorContainer = document.getElementById('loginErrorContainer');
+
+    let errorMessage = document.createElement("h4");
+    errorMessage.textContent = "Login Attempt Unsuccessful - Please try again or register as a new user";
+    loginErrorContainer.appendChild(errorMessage);
+    loginErrorContainer.style.color = "red";
+    loginErrorContainer.classList.remove("hidden");
+}
+
+function generateRegistrationError() {
+    const registrationErrorContainer = document.getElementById('registrationErrorContainer');
+
+    let errorMessage = document.createElement("h4");
+    errorMessage.textContent = "Registration Attempt Unsuccessful - Please try again";
+    registrationErrorContainer.appendChild(errorMessage);
+    registrationErrorContainer.style.color = "red";
+    registrationErrorContainer.classList.remove("hidden");
+}
+
+function populateUsersList(users) {
+    const userList = document.getElementById('userList');
+
+    for (let user in users) {
+        let userListItem = document.createElement('li');
+        userListItem.textContent = users[user].username;
+        userList.appendChild(userListItem);
+    }
 }
