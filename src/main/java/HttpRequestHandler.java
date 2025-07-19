@@ -39,11 +39,7 @@ public class HttpRequestHandler {
                 response = generateErrorResponse(responseStatusCode);
             }
 
-            int responseBodyLength = response.getBody().getBytes(StandardCharsets.UTF_8).length;
-            response.setHeader("Content-Length", String.valueOf(responseBodyLength));
-            response.setHeader("Date", getHttpDateTime());
-            response.setHeader("Connection", "close");
-
+            finalizeResponseHeaders();
             output.write(response.toString().getBytes());
             output.flush();
         } catch (IOException e) {
@@ -189,7 +185,8 @@ public class HttpRequestHandler {
             case 405 -> reasonPhrase = "Method Not Allowed";
             case 406 -> reasonPhrase = "Not Acceptable";
             case 409 -> reasonPhrase = "Conflict";
-            default -> reasonPhrase = "Internal Server Error";
+            case 500 -> reasonPhrase = "Internal Server Error";
+            default -> reasonPhrase = "Unknown";
         }
 
         return reasonPhrase;
@@ -207,6 +204,13 @@ public class HttpRequestHandler {
                         <h1>%1$d Error: %2$s</h1>
                     </body>
                 </html>""", statusCode, reasonPhrase);
+    }
+
+    private void finalizeResponseHeaders() {
+        int responseBodyLength = response.getBody().getBytes(StandardCharsets.UTF_8).length;
+        response.setHeader("Content-Length", String.valueOf(responseBodyLength));
+        response.setHeader("Date", getHttpDateTime());
+        response.setHeader("Connection", "close");
     }
 
     private String getHttpDateTime() {
