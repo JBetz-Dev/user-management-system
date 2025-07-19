@@ -15,15 +15,17 @@ public class JsonUserParser {
                     String name = field.getName();
                     Object val = field.get(user);
 
-                    sb.append("\"").append(name).append("\":");
-                    if (val == null) {
-                        sb.append("null");
-                    } else if (val instanceof String) {
-                        sb.append("\"").append(escapeJson((String) val)).append("\"");
-                    } else {
-                        sb.append(val);
+                    if (!name.equals("passwordHash")) {
+                        sb.append("\"").append(name).append("\":");
+                        if (val == null) {
+                            sb.append("null");
+                        } else if (val instanceof String) {
+                            sb.append("\"").append(escapeJson((String) val)).append("\"");
+                        } else {
+                            sb.append(val);
+                        }
+                        sb.append(",");
                     }
-                    sb.append(",");
                 }
                 sb.deleteCharAt(sb.length() - 1);
             }
@@ -42,12 +44,27 @@ public class JsonUserParser {
 
         for (String pair : pairs) {
             String[] keyValue = pair.split(":");
-            String  key = keyValue[0].trim().replaceAll("^\"|\"$","");
+            String key = keyValue[0].trim().replaceAll("^\"|\"$","");
             String value =  keyValue[1].trim().replaceAll("^\"|\"$", "");
             fieldMap.put(key, value);
         }
 
         return new User(fieldMap.get("username"), fieldMap.get("email"), fieldMap.get("password"));
+    }
+
+    public static Map<String, String> mapJsonToUserFields(String json) {
+        json = json.trim().replaceAll("^\\{|\\}$", "");
+        String[] pairs = json.split(",");
+        Map<String, String> fieldMap =  new HashMap<>();
+
+        for (String pair : pairs) {
+            String[] keyValue = pair.split(":");
+            String key = keyValue[0].trim().replaceAll("^\"|\"$","");
+            String value =  keyValue[1].trim().replaceAll("^\"|\"$", "");
+            fieldMap.put(key, value);
+        }
+
+        return fieldMap;
     }
 
     private static String escapeJson(String value) {

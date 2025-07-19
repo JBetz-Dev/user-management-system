@@ -31,7 +31,12 @@ public class HttpRequestHandler {
                 parseHttpRequest(reader);
                 response = getResponse();
             } catch (ParsingException e) {
-                response = handleBadRequest();
+                response.setStatusCode(400);
+            }
+
+            int responseStatusCode =  response.getStatusCode();
+            if (responseStatusCode >= 400) {
+                response = generateErrorResponse(responseStatusCode);
             }
 
             int responseBodyLength = response.getBody().getBytes(StandardCharsets.UTF_8).length;
@@ -39,7 +44,6 @@ public class HttpRequestHandler {
             response.setHeader("Date", getHttpDateTime());
             response.setHeader("Connection", "close");
 
-            System.out.println(response.toString());
             output.write(response.toString().getBytes());
             output.flush();
         } catch (IOException e) {
@@ -53,25 +57,13 @@ public class HttpRequestHandler {
         if (path.contains("users")) {
             UserHandler userHandler = new UserHandler(request);
             response = userHandler.getResponse();
-
-            if (isInvalidResponse()) {
-                response = handleInternalServerError();
-            }
         } else {
             FileHandler fileHandler = new FileHandler(request);
             try {
                 response = fileHandler.getResponse();
-
-                if (isInvalidResponse()) {
-                    response = handleInternalServerError();
-                }
             } catch (IOException e) {
-                response = handleInternalServerError();
+                response.setStatusCode(500);
             }
-        }
-
-        if (response.getStatusCode() == 404) {
-            response = handleResourceNotFoundError();
         }
 
         return response;
@@ -170,77 +162,37 @@ public class HttpRequestHandler {
         }
     }
 
-    public boolean isInvalidResponse() {
-        Pattern versionValidator = Pattern.compile("HTTP/(\\d+)\\.(\\d+)");
+    private HttpResponse generateErrorResponse(int statusCode) {
+        String reasonPhrase = getReasonPhrase(statusCode);
 
-        if (response == null) {
-            return true;
-        }
-
-        String version = response.getVersion();
-        if (version == null || version.isEmpty() || !versionValidator.matcher(version).matches()) {
-            System.err.println("Invalid HTTP version: " + version);
-            return true;
-        }
-
-        int statusCode = response.getStatusCode();
-        if (statusCode < 100 || statusCode > 599) {
-            System.err.println("Invalid HTTP status code: " + statusCode);
-            return true;
-        }
-
-        String reasonPhrase = response.getReasonPhrase();
-        if (reasonPhrase == null || reasonPhrase.isEmpty()) {
-            System.err.println("Invalid HTTP reason phrase (none provided)");
-            return true;
-        }
-
-        Map<String, String> headers = response.getHeaders();
-        if (!headers.containsKey("Content-Type")) {
-            System.err.println("Invalid HTTP format: Content-Type header not provided");
-            return true;
-        }
-
-        return false;
-    }
-
-    private HttpResponse handleBadRequest() {
-        int statusCode = 400;
-        String reasonPhrase = "Bad Request";
-
-        response.setVersion(request.getVersion());
+        response.setVersion("HTTP/1.1");
         response.setStatusCode(statusCode);
         response.setReasonPhrase(reasonPhrase);
-        response.setHeader("Content-Type", "text/html");
-        response.setBody(generateErrorHtml(statusCode, reasonPhrase));
+        if (request.getHeader("Content-Type").equals("application/json")) {
+            response.setHeader("Content-Type", "application/json");
+            response.setBody("{\"error\": \"" + reasonPhrase + "\"}");
+        } else {
+            response.setHeader("Content-Type", "text/html");
+            response.setBody(generateErrorHtml(statusCode, reasonPhrase));
+        }
 
         return response;
     }
 
-    private HttpResponse handleInternalServerError() {
-        int statusCode = 500;
-        String reasonPhrase = "Internal Server Error";
+    private String getReasonPhrase(int statusCode) {
+        String reasonPhrase;
+        switch (statusCode) {
+            case 400 -> reasonPhrase = "Bad Request";
+            case 401 -> reasonPhrase = "Unauthorized";
+            case 403 -> reasonPhrase = "Forbidden";
+            case 404 -> reasonPhrase = "Not Found";
+            case 405 -> reasonPhrase = "Method Not Allowed";
+            case 406 -> reasonPhrase = "Not Acceptable";
+            case 409 -> reasonPhrase = "Conflict";
+            default -> reasonPhrase = "Internal Server Error";
+        }
 
-        response.setVersion(request.getVersion());
-        response.setStatusCode(statusCode);
-        response.setReasonPhrase(reasonPhrase);
-        response.setHeader("Content-Type", "text/html");
-        response.setBody(generateErrorHtml(statusCode, reasonPhrase));
-
-        return response;
-    }
-
-    private HttpResponse handleResourceNotFoundError() {
-        int statusCode = 404;
-        String reasonPhrase = "Not Found";
-
-        response.setVersion(request.getVersion());
-        response.setStatusCode(statusCode);
-        response.setReasonPhrase("Not Found");
-        response.setHeader("Content-Type", "text/html");
-        response.setBody(generateErrorHtml(statusCode, reasonPhrase));
-
-        return response;
+        return reasonPhrase;
     }
 
     private String generateErrorHtml(int statusCode, String reasonPhrase) {

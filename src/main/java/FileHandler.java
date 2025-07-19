@@ -12,7 +12,7 @@ public class FileHandler {
     }
 
     public HttpResponse getResponse() throws IOException {
-        response.setVersion(request.getVersion());
+        response.setVersion("HTTP/1.1");
 
         String pathString = request.getPath();
         Path path = Path.of(pathString.equals("/") ? "src/index.html" : pathString.substring(1));
@@ -25,7 +25,6 @@ public class FileHandler {
             response.setBody(responseBody);
         } else {
             response.setStatusCode(404);
-            response.setReasonPhrase("Not Found");
         }
 
         return response;

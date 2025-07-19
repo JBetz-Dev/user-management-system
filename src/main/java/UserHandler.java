@@ -1,17 +1,19 @@
 import java.util.List;
+import java.util.Map;
 
 public class UserHandler {
     private final HttpRequest request;
     private final HttpResponse response;
-    private final UserService userService = new UserService();
+    private final UserService userService;
 
     public UserHandler(HttpRequest request) {
         this.request = request;
         response = new HttpResponse();
+        userService = new UserService();
     }
 
     public HttpResponse getResponse() {
-        response.setVersion(request.getVersion());
+        response.setVersion("HTTP/1.1");
         response.setHeader("Content-Type", "application/json");
 
         String method = request.getMethod();
@@ -27,11 +29,12 @@ public class UserHandler {
         // Add additional endpoints
         if (segmentsLength == 2 && method.equals("GET")) {
             handleGetAllUsers();
-        } else if (segmentsLength == 2 && method.equals("POST")) {
+        } else if (segmentsLength == 3 && segments[2].equals("login") && method.equals("POST")) {
+            handleAuthenticateUser();
+        } else if (segmentsLength == 3 && segments[2].equals("register") && method.equals("POST")) {
             handleRegisterNewUser();
         } else {
             response.setStatusCode(404);
-            response.setReasonPhrase("Not Found");
         }
 
         return response;
@@ -52,9 +55,26 @@ public class UserHandler {
         }
         sb.append("]");
 
-        response.setBody(sb.toString());
         response.setStatusCode(200);
         response.setReasonPhrase("OK");
+        response.setBody(sb.toString());
+    }
+
+    private void handleAuthenticateUser() {
+        String requestBody = request.getBody();
+
+        Map<String, String> unauthenticatedUser = JsonUserParser.mapJsonToUserFields(requestBody);
+        User savedUser = userService.getUserByUsername(unauthenticatedUser.get("username"));
+
+        if (savedUser == null) {
+            response.setStatusCode(404);
+        } else if (savedUser.verifyPassword(unauthenticatedUser.get("password"))) {
+            response.setStatusCode(200);
+            response.setReasonPhrase("OK");
+            response.setBody(JsonUserParser.mapUserToJson(savedUser));
+        } else {
+            response.setStatusCode(401);
+        }
     }
 
     private void handleRegisterNewUser() {
@@ -63,13 +83,11 @@ public class UserHandler {
         User user = JsonUserParser.mapJsonToUser(requestBody);
         user = userService.registerNewUser(user);
         if (user != null) {
-            response.setBody(JsonUserParser.mapUserToJson(user));
             response.setStatusCode(201);
             response.setReasonPhrase("Created");
+            response.setBody(JsonUserParser.mapUserToJson(user));
         } else {
             response.setStatusCode(409);
-            response.setReasonPhrase("Conflict");
-            response.setBody("{\"Error\": \"User already exists\"}");
         }
     }
 }
