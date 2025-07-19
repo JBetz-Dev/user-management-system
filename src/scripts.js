@@ -1,7 +1,7 @@
-const loginForm = document.querySelector('#loginForm');
-const registerForm = document.querySelector('#registerForm');
-const loginButton = document.querySelector('#loginButton');
-const registerButton = document.querySelector('#registerButton');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const changePasswordButton = document.getElementById('changePasswordButton');
+const listAllUsersButton = document.getElementById('listAllUsersButton');
 
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -12,18 +12,16 @@ if (loginForm) {
             password: document.getElementById('password').value,
         };
 
-        fetch('http://localhost:9000/users/login/', {
-            method: 'POST',
+        fetch("http://localhost:9000/users/login/", {
+            method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(userData),
         }).then(response => {
             if (response.ok) {
-                return response.json();
+                window.location.href = "user-area.html"
             } else {
-                throw new Error('Error authenticating user.');
+                throw new Error("Error authenticating user.");
             }
-        }).then(data => {
-            console.log('Success: ', data); // placeholder
         }).catch(error => {
             console.log("Error: ", error); // placeholder
         });
@@ -40,20 +38,41 @@ if (registerForm) {
             password: document.getElementById('password').value
         }
 
-        fetch('http://localhost:9000/users/register/', {
-            method: 'POST',
+        fetch("http://localhost:9000/users/register/", {
+            method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(userData),
         }).then(response => {
             if (response.ok) {
                 return response.json();
             } else {
-                throw new Error('Error registering user.');
+                throw new Error("Error registering user.");
             }
         }).then(data => {
-            console.log('Success: ', data); // placeholder
+            console.log("Success: ", data); // placeholder
         }).catch(error => {
             console.log("Error: ", error); // placeholder
+        })
+    })
+}
+
+if (listAllUsersButton) {
+    listAllUsersButton.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        fetch("http://localhost:9000/users/", {
+            method: "GET",
+            headers: {"Accept": "application/json"},
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Error fetching users list");
+            }
+        }).then(data => {
+            console.log("Success: ", data);
+        }).catch(error => {
+            console.log("Error: ", error);
         })
     })
 }
