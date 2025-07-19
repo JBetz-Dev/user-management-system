@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class UserHandler {
     private final HttpRequest request;
@@ -13,6 +14,17 @@ public class UserHandler {
     }
 
     public HttpResponse getResponse() {
+        boolean hasActiveSession = false;
+        String cookie = request.getHeader("Cookie");
+
+        if (cookie != null) {
+            String sessionId = SessionManager.extractSessionIdFromCookie(cookie);
+
+            if (SessionManager.isActiveSession(sessionId)) {
+                hasActiveSession = true;
+            }
+        }
+
         response.setVersion("HTTP/1.1");
         response.setHeader("Content-Type", "application/json");
 
@@ -28,7 +40,11 @@ public class UserHandler {
 
         // Add additional endpoints
         if (segmentsLength == 2 && method.equals("GET")) {
-            handleGetAllUsers();
+            if (hasActiveSession) {
+                handleGetAllUsers();
+            } else {
+                response.setStatusCode(401);
+            }
         } else if (segmentsLength == 3 && segments[2].equals("login") && method.equals("POST")) {
             handleAuthenticateUser();
         } else if (segmentsLength == 3 && segments[2].equals("register") && method.equals("POST")) {
@@ -46,7 +62,7 @@ public class UserHandler {
 
         sb.append("[");
         if (!users.isEmpty()) {
-            for (User user : userService.getAllUsers()) {
+            for (User user : users) {
                 String userJson = JsonUserParser.mapUserToJson(user);
                 sb.append(userJson).append(",");
             }
@@ -71,6 +87,12 @@ public class UserHandler {
         } else if (savedUser.verifyPassword(unauthenticatedUser.get("password"))) {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
+
+            String sessionId = UUID.randomUUID().toString();
+            SessionManager.setActiveSession(sessionId, savedUser);
+            String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
+            response.setHeader("Set-Cookie", cookieString);
+
             response.setBody(JsonUserParser.mapUserToJson(savedUser));
         } else {
             response.setStatusCode(401);
@@ -80,11 +102,16 @@ public class UserHandler {
     private void handleRegisterNewUser() {
         String requestBody = request.getBody();
 
-        User user = JsonUserParser.mapJsonToUser(requestBody);
-        user = userService.registerNewUser(user);
+        User user = userService.registerNewUser(JsonUserParser.mapJsonToUser(requestBody));
         if (user != null) {
             response.setStatusCode(201);
             response.setReasonPhrase("Created");
+
+            String sessionId = UUID.randomUUID().toString();
+            SessionManager.setActiveSession(sessionId, user);
+            String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
+            response.setHeader("Set-Cookie", cookieString);
+
             response.setBody(JsonUserParser.mapUserToJson(user));
         } else {
             response.setStatusCode(409);

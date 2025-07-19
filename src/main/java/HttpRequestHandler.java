@@ -34,12 +34,13 @@ public class HttpRequestHandler {
                 response.setStatusCode(400);
             }
 
-            int responseStatusCode =  response.getStatusCode();
+            int responseStatusCode = response.getStatusCode();
             if (responseStatusCode >= 400) {
                 response = generateErrorResponse(responseStatusCode);
             }
 
             finalizeResponseHeaders();
+            System.out.println(response.toString());
             output.write(response.toString().getBytes());
             output.flush();
         } catch (IOException e) {
@@ -164,15 +165,29 @@ public class HttpRequestHandler {
         response.setVersion("HTTP/1.1");
         response.setStatusCode(statusCode);
         response.setReasonPhrase(reasonPhrase);
-        if (request.getHeader("Content-Type").equals("application/json")) {
-            response.setHeader("Content-Type", "application/json");
-            response.setBody("{\"error\": \"" + reasonPhrase + "\"}");
+
+        String requestContentType = getRequestContentType();
+        if (requestContentType.contains("application/json")) {
+                response.setHeader("Content-Type", "application/json");
+                response.setBody("{\"error\": \"" + reasonPhrase + "\"}");
         } else {
             response.setHeader("Content-Type", "text/html");
             response.setBody(generateErrorHtml(statusCode, reasonPhrase));
         }
 
         return response;
+    }
+
+    private String getRequestContentType() {
+        String contentType = "";
+
+        if (request.getHeader("Content-Type") != null) {
+            contentType = request.getHeader("Content-Type");
+        } else if (request.getHeader("Accept") != null) {
+            contentType = request.getHeader("Accept");
+        }
+
+        return contentType;
     }
 
     private String getReasonPhrase(int statusCode) {
