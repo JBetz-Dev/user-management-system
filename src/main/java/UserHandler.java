@@ -18,9 +18,9 @@ public class UserHandler {
         String cookie = request.getHeader("Cookie");
 
         if (cookie != null) {
-            String sessionId = SessionManager.extractSessionIdFromCookie(cookie);
+            SessionData sessionData = SessionManager.getActiveSession(cookie);
 
-            if (SessionManager.isActiveSession(sessionId)) {
+            if (sessionData != null && sessionData.isActive()) {
                 hasActiveSession = true;
             }
         }
