@@ -1,20 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Home</title>
-        <link rel="stylesheet" href="/src/styles.css">
-    </head>
-    <body>
-        <div id="homeContainer">
-            <h2>Welcome to the User Management Test Site</h2>
-
-                <h3>Select One of the Following:</h3>
-                <div id="buttonContainer">
-                    <button id="loginButton"><a href="/src/login.html">Login</a></button>
-                    <button id="registerButton"><a href="/src/register.html">Register</a></button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="/src/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- Navigation Section -->
+<nav>
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="#" class="home-link">
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    User Management System
                 </div>
+            </a>
         </div>
-    <script src="/src/scripts.js"></script>
-    </body>
+        <div class="nav-buttons">
+            <a href="/src/login.html" class="btn btn-outline">Log In</a>
+            <a href="/src/register.html" class="btn btn-primary">Sign Up</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>Hero Banner Header</h1>
+        <p>Hero subtext...</p>
+        <a href="#" class="hero-cta">Hero CTA</a>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="container">
+    <div class="content">
+        <div class="content-grid">
+            <div class="content-text">
+                <h2>Description Header</h2>
+                <p>Description goes here...</p>
+            </div>
+            <div class="content-image">
+                <img src="" alt="">
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="/src/scripts.js"></script>
+</body>
 </html>

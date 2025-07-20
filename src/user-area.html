@@ -1,24 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>User Area</title>
-        <link rel="stylesheet" href="/src/styles.css">
-    </head>
-    <body>
-        <div id="userAreaContainer">
-            <h2>User Area</h2>
-
-            <h3>Options:</h3>
-            <div id="buttonContainer">
-                <button id="listUsersButton">List Users</button>
-            </div>
-
-            <div id="userListContainer" class="hidden">
-                <h3>Users:</h3>
-                <ol id="userList"></ol>
-            </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profiles</title>
+    <link rel="stylesheet" href="/src/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- Navigation Section -->
+<nav>
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="/src/index.html" class="home-link">
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    User Management System
+                </div>
+            </a>
         </div>
-    <script src="/src/scripts.js"></script>
-    </body>
+        <div class="nav-buttons">
+            <a href="/src/login.html" class="btn btn-outline">Log In</a>
+            <a href="/src/register.html" class="btn btn-primary">Sign Up</a>
+        </div>
+    </div>
+</nav>
+
+<!-- User Area Content -->
+<section class="container">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2><i class="fas fa-users"></i> User Management</h2>
+            <p>View all registered users in the system.</p>
+        </div>
+        <button id="list-users-btn" class="list-users-btn">
+            <i class="fas fa-list"></i> List All Users
+        </button>
+    </div>
+</section>
+
+<script src="/src/scripts.js"></script>
+</body>
 </html>
