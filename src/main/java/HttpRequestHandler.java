@@ -29,7 +29,7 @@ public class HttpRequestHandler {
 
             try {
                 parseHttpRequest(reader);
-                response = getResponse();
+                response = getHandlerResponse();
             } catch (ParsingException e) {
                 response.setStatusCode(400);
             }
@@ -48,11 +48,24 @@ public class HttpRequestHandler {
         }
     }
 
-    private HttpResponse getResponse() {
+    private HttpResponse getHandlerResponse() {
         String path = request.getPath();
+        String cookie = request.getHeader("Cookie");
+        SessionData sessionData = null;
+
+        if (cookie != null) {
+            sessionData = SessionManager.getActiveSession(cookie);
+        }
 
         if (path.contains("users")) {
-            UserHandler userHandler = new UserHandler(request);
+            UserHandler userHandler;
+
+            if (sessionData != null && sessionData.isActive()) {
+                userHandler = new UserHandler(request, sessionData);
+            } else {
+                userHandler = new UserHandler(request);
+            }
+
             response = userHandler.getResponse();
         } else {
             FileHandler fileHandler = new FileHandler(request);
@@ -168,8 +181,8 @@ public class HttpRequestHandler {
 
         String requestContentType = getRequestContentType();
         if (requestContentType.contains("application/json")) {
-                response.setHeader("Content-Type", "application/json");
-                response.setBody("{\"error\": \"" + reasonPhrase + "\"}");
+            response.setHeader("Content-Type", "application/json");
+            response.setBody("{\"error\": \"" + reasonPhrase + "\"}");
         } else {
             response.setHeader("Content-Type", "text/html");
             response.setBody(generateErrorHtml(statusCode, reasonPhrase));

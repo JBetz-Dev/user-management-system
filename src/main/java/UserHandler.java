@@ -6,6 +6,7 @@ public class UserHandler {
     private final HttpRequest request;
     private final HttpResponse response;
     private final UserService userService;
+    private SessionData sessionData;
 
     public UserHandler(HttpRequest request) {
         this.request = request;
@@ -13,17 +14,15 @@ public class UserHandler {
         userService = new UserService();
     }
 
+    public UserHandler(HttpRequest request, SessionData sessionData) {
+        this.request = request;
+        response = new HttpResponse();
+        userService = new UserService();
+        this.sessionData = sessionData;
+    }
+
     public HttpResponse getResponse() {
-        boolean hasActiveSession = false;
-        String cookie = request.getHeader("Cookie");
-
-        if (cookie != null) {
-            SessionData sessionData = SessionManager.getActiveSession(cookie);
-
-            if (sessionData != null && sessionData.isActive()) {
-                hasActiveSession = true;
-            }
-        }
+        boolean hasActiveSession = sessionData != null && sessionData.isActive();
 
         response.setVersion("HTTP/1.1");
         response.setHeader("Content-Type", "application/json");
