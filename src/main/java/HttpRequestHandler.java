@@ -51,24 +51,31 @@ public class HttpRequestHandler {
     private HttpResponse getHandlerResponse() {
         String path = request.getPath();
         String cookie = request.getHeader("Cookie");
-        SessionData sessionData = null;
+        SessionData activeSession = null;
 
         if (cookie != null) {
-            sessionData = SessionManager.getActiveSession(cookie);
+            activeSession = SessionManager.getActiveSession(cookie);
         }
 
         if (path.contains("users")) {
             UserHandler userHandler;
 
-            if (sessionData != null && sessionData.isActive()) {
-                userHandler = new UserHandler(request, sessionData);
+            if (activeSession != null) {
+                userHandler = new UserHandler(request, activeSession);
             } else {
                 userHandler = new UserHandler(request);
             }
 
             response = userHandler.getResponse();
         } else {
-            FileHandler fileHandler = new FileHandler(request);
+            FileHandler fileHandler;
+
+            if (activeSession != null) {
+                fileHandler = new FileHandler(request, activeSession);
+            } else {
+                fileHandler = new FileHandler(request);
+            }
+
             try {
                 response = fileHandler.getResponse();
             } catch (IOException e) {
