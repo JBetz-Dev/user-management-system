@@ -4,7 +4,11 @@ public class UserService {
     private final UserDAO userDAO = new UserDAO();
 
     public User registerNewUser(User user) {
-        return userDAO.insertUser(user);
+        if (getUserByUsername(user.getUsername()) == null) {
+            return userDAO.insertUser(user);
+        } else {
+            return null;
+        }
     }
 
     public boolean changeUsername(User user, String username, String password) {
