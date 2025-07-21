@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="/src/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- Navigation Section -->
+<nav>
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="/src/index.html" class="home-link">
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    User Management System
+                </div>
+            </a>
+        </div>
+        <div class="nav-buttons">
+            <a href="/src/login.html" class="btn btn-outline">Log In</a>
+            <a href="/src/register.html" class="btn btn-primary">Sign Up</a>
+            <a href="/src/profile.html" class="profile-nav-btn" title="profile"><i class="fas fa-user"></i></a>
+        </div>
+    </div>
+</nav>
+
+<!-- User Profile Section -->
+<section class="container">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h2><span id="profile-username"></span></h2>
+            <p>Your Details:</p>
+        </div>
+
+        <div class="profile-info">
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value"><span id="profile-email"></span></div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <button id="change-username-btn" class="profile-btn primary">
+                <i class="fas fa-key"></i> Change Email
+            </button>
+            <button id="change-password-btn" class="profile-btn">
+                <i class="fas fa-edit"></i> Change Password
+            </button>
+        </div>
+    </div>
+</section>
+
+<script src="/src/scripts.js"></script>
+</body>
+</html>
