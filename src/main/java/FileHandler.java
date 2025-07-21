@@ -44,10 +44,10 @@ public class FileHandler {
         // Add additional paths
         for (String restrictedPath : restrictedPaths) {
             if (path.contains(restrictedPath)) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private void handleFileRequest(Path path) throws IOException {
