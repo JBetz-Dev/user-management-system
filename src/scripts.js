@@ -1,6 +1,7 @@
 const loginForm = document.getElementById('login-form');
 const signUpForm = document.getElementById('sign-up-form');
 const listUsersButton = document.getElementById('list-users-btn');
+const userProfileContainer = document.getElementById('user-profile');
 
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -17,10 +18,13 @@ if (loginForm) {
             body: JSON.stringify(userData),
         }).then(response => {
             if (response.ok) {
-                window.location.href = "user-area.html"
+                return response.json();
             } else {
                 throw new Error("Error authenticating user");
             }
+        }).then(data => {
+            sessionStorage.setItem("user", JSON.stringify(data));
+            window.location.href = "user-area.html";
         }).catch(error => {
             generateLoginError();
         });
@@ -37,16 +41,19 @@ if (signUpForm) {
             password: document.getElementById('sign-up-password').value
         }
 
-        fetch("http://localhost:9000/users/register/", {
+        fetch("http://localhost:9000/users/", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(userData),
         }).then(response => {
             if (response.ok) {
-                window.location.href = "user-area.html"
+                return response.json();
             } else {
                 throw new Error("Error registering user");
             }
+        }).then(data => {
+            sessionStorage.setItem("user", JSON.stringify(data));
+            window.location.href = "user-area.html";
         }).catch(() => {
             generateRegistrationError();
         })
@@ -77,6 +84,15 @@ if (listUsersButton) {
             console.log("Error: ", error);
         });
     });
+}
+
+if (userProfileContainer) {
+    let userData = JSON.parse(sessionStorage.getItem("user"));
+
+    if (userData) {
+        document.getElementById('profile-username').textContent = userData.username;
+        document.getElementById('profile-email').textContent = userData.email;
+    }
 }
 
 function redirectToLogin() {
