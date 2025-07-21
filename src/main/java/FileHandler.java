@@ -1,11 +1,13 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class FileHandler {
     private final HttpRequest request;
     private final HttpResponse response;
     private SessionData sessionData;
+    private final List<String> restrictedPaths = List.of("user-area", "profile");
 
     public FileHandler(HttpRequest request) {
         this.request = request;
@@ -40,7 +42,12 @@ public class FileHandler {
 
     private boolean isRestrictedPath(String path) {
         // Add additional paths
-        return path.contains("user-area");
+        for (String restrictedPath : restrictedPaths) {
+            if (path.contains(restrictedPath)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void handleFileRequest(Path path) throws IOException {
