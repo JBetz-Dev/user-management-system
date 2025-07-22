@@ -1,6 +1,5 @@
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class UserHandler {
     private final HttpRequest request;
@@ -93,8 +92,7 @@ public class UserHandler {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
 
-            String sessionId = UUID.randomUUID().toString();
-            SessionManager.setActiveSession(sessionId, savedUser);
+            String sessionId = SessionManager.setActiveSession(savedUser);
             String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
             response.setHeader("Set-Cookie", cookieString);
 
@@ -112,8 +110,7 @@ public class UserHandler {
             response.setStatusCode(201);
             response.setReasonPhrase("Created");
 
-            String sessionId = UUID.randomUUID().toString();
-            SessionManager.setActiveSession(sessionId, user);
+            String sessionId = SessionManager.setActiveSession(user);
             String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
             response.setHeader("Set-Cookie", cookieString);
 
@@ -131,16 +128,22 @@ public class UserHandler {
         String currentPassword = unauthenticatedUser.get("currentPassword");
         String newPassword = unauthenticatedUser.get("newPassword");
 
-        User savedUser = userService.getUserById(userId);
+        User savedUser = sessionData.user();
 
-        if (savedUser == null) {
-            response.setStatusCode(404);
-        } else if (userService.changePassword(savedUser, currentPassword, newPassword)) {
+        if (savedUser.getId() != userId) {
+            response.setStatusCode(403);
+            return;
+        }
+
+        boolean passwordUpdated = userService.changePassword(savedUser, currentPassword, newPassword);
+
+         if (passwordUpdated) {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
 
-            String sessionId = UUID.randomUUID().toString();
-            SessionManager.setActiveSession(sessionId, savedUser);
+
+            SessionManager.invalidateUserSessions(savedUser);
+            String sessionId = SessionManager.setActiveSession(savedUser);
             String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
             response.setHeader("Set-Cookie", cookieString);
 

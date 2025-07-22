@@ -2,22 +2,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
     private static final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();
     private static long sessionCleanupCounter = 0;
-
-    protected static SessionData getActiveSession(String cookie) {
-        String sessionId = extractSessionIdFromCookie(cookie);
-        SessionData sessionData = activeSessions.get(sessionId);
-
-        if (sessionData == null || sessionData.isExpired()) {
-            return null;
-        }
-
-        return sessionData;
-    }
 
     private static String extractSessionIdFromCookie(String cookie) {
         String sessionId = "";
@@ -39,7 +29,19 @@ public class SessionManager {
         return sessionId;
     }
 
-    protected static void setActiveSession(String sessionId, User user) {
+    protected static SessionData getActiveSession(String cookie) {
+        String sessionId = extractSessionIdFromCookie(cookie);
+        SessionData sessionData = activeSessions.get(sessionId);
+
+        if (sessionData == null || sessionData.isExpired()) {
+            return null;
+        }
+
+        return sessionData;
+    }
+
+    protected static String setActiveSession(User user) {
+        String sessionId = UUID.randomUUID().toString();
         LocalDateTime currentDateTime = LocalDateTime.now();
         LocalDateTime expiryDateTime = currentDateTime.plusMinutes(60);
 
@@ -48,6 +50,14 @@ public class SessionManager {
         if (sessionCleanupCounter++ == 1000) {
             removeInactiveSessions();
         }
+
+        return sessionId;
+    }
+
+    protected static void invalidateUserSessions(User user) {
+        activeSessions.entrySet().removeIf(
+                entry -> entry.getValue().user().getId() == user.getId()
+        );
     }
 
     private static void removeInactiveSessions() {
