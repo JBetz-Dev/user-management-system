@@ -83,12 +83,20 @@ public class UserHandler {
     private void handleAuthenticateUser() {
         String requestBody = request.getBody();
 
-        Map<String, String> unauthenticatedUser = JsonUserParser.mapJsonToUserFields(requestBody);
-        User savedUser = userService.getUserByUsername(unauthenticatedUser.get("username"));
+        Map<String, String> providedFields = JsonUserParser.parseJsonToFieldMap(requestBody);
+        String username = providedFields.get("username");
+        String password = providedFields.get("password");
+
+        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
+            response.setStatusCode(404);
+            return;
+        }
+
+        User savedUser = userService.getUserByUsername(username);
 
         if (savedUser == null) {
             response.setStatusCode(404);
-        } else if (savedUser.verifyPassword(unauthenticatedUser.get("password"))) {
+        } else if (savedUser.verifyPassword(password)) {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
 
@@ -106,6 +114,7 @@ public class UserHandler {
         String requestBody = request.getBody();
 
         User user = userService.registerNewUser(JsonUserParser.mapJsonToUser(requestBody));
+
         if (user != null) {
             response.setStatusCode(201);
             response.setReasonPhrase("Created");
@@ -122,11 +131,26 @@ public class UserHandler {
 
     private void handleChangePassword() {
         String requestBody = request.getBody();
+        Map<String, String> providedFields = JsonUserParser.parseJsonToFieldMap(requestBody);
 
-        Map<String, String> unauthenticatedUser = JsonUserParser.mapJsonToUserFields(requestBody);
-        int userId = Integer.parseInt(unauthenticatedUser.get("id"));
-        String currentPassword = unauthenticatedUser.get("currentPassword");
-        String newPassword = unauthenticatedUser.get("newPassword");
+        String idString = providedFields.get("id");
+        String currentPassword = providedFields.get("currentPassword");
+        String newPassword = providedFields.get("newPassword");
+
+        if (idString == null || idString.isEmpty() || currentPassword == null ||
+            currentPassword.isEmpty() || newPassword == null || newPassword.isEmpty()) {
+            response.setStatusCode(400);
+            return;
+        }
+
+        int userId;
+
+        try {
+            userId = Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            response.setStatusCode(400);
+            return;
+        }
 
         User savedUser = sessionData.user();
 
@@ -137,10 +161,9 @@ public class UserHandler {
 
         boolean passwordUpdated = userService.changePassword(savedUser, currentPassword, newPassword);
 
-         if (passwordUpdated) {
+        if (passwordUpdated) {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
-
 
             SessionManager.invalidateUserSessions(savedUser);
             String sessionId = SessionManager.setActiveSession(savedUser);

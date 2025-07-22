@@ -38,21 +38,12 @@ public class JsonUserParser {
     }
 
     public static User mapJsonToUser(String json) {
-        json = json.trim().replaceAll("^\\{|\\}$", "");
-        String[] pairs = json.split(",");
-        Map<String, String> fieldMap =  new HashMap<>();
-
-        for (String pair : pairs) {
-            String[] keyValue = pair.split(":");
-            String key = keyValue[0].trim().replaceAll("^\"|\"$","");
-            String value =  keyValue[1].trim().replaceAll("^\"|\"$", "");
-            fieldMap.put(key, value);
-        }
+        Map<String, String> fieldMap = parseJsonToFieldMap(json);
 
         return new User(fieldMap.get("username"), fieldMap.get("email"), fieldMap.get("password"));
     }
 
-    public static Map<String, String> mapJsonToUserFields(String json) {
+    public static Map<String, String> parseJsonToFieldMap(String json) {
         json = json.trim().replaceAll("^\\{|\\}$", "");
         String[] pairs = json.split(",");
         Map<String, String> fieldMap =  new HashMap<>();
