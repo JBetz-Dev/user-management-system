@@ -2,6 +2,7 @@ const loginForm = document.getElementById('login-form');
 const signUpForm = document.getElementById('sign-up-form');
 const listUsersButton = document.getElementById('list-users-btn');
 const userProfileContainer = document.getElementById('user-profile');
+const changePasswordButton = document.getElementById('change-password-btn');
 
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -81,8 +82,15 @@ if (listUsersButton) {
             if (error.message === "Session Expired") {
                 handleSessionExpiry();
             }
-            console.log("Error: ", error);
         });
+    });
+}
+
+if (changePasswordButton) {
+    changePasswordButton.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        showChangePasswordModal();
     });
 }
 
@@ -145,6 +153,64 @@ function populateUsersList(users) {
     });
 
     showUserListModal(userListHTML);
+}
+
+function showChangePasswordModal() {
+    let title = "Change Password";
+    let contentHTML = `
+        <form id="change-password-form">
+            <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input type="password" id="current-password" class="form-input" placeholder="Enter your current password" required>
+            </div>
+            <div class="form-group">
+                <label for="new-password">Password</label>
+                <input type="password" id="new-password" class="form-input" placeholder="Enter your new password" required>
+            </div>
+            <button type="button" class="form-btn" onclick="handleChangePassword()">
+                <i class="fas fa-user-plus"></i> Change Password
+            </button>
+        </form>
+    `;
+
+    createModal(title, contentHTML);
+}
+
+function handleChangePassword() {
+    let currentPassword = document.getElementById('current-password').value;
+    let newPassword = document.getElementById('new-password').value;
+    let userData = JSON.parse(sessionStorage.getItem("user"));
+
+    if (userData) {
+        fetch(`http://localhost:9000/users/${userData.id}/password/`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                id: userData.id,
+                currentPassword: currentPassword,
+                newPassword: newPassword
+            })
+        }).then(response => {
+            if (response.status === 401) {
+                throw new Error("Session Expired");
+            } else if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Error updating password");
+            }
+        }).then(data => {
+            console.log("Success: ", data);
+            closeModal();
+        }).catch(error => {
+            if (error.message === "Session Expired") {
+                handleSessionExpiry();
+            }
+            console.log("Error: ", error);
+        });
+    } else {
+        handleSessionExpiry();
+    }
 }
 
 function createModal(title, content, options = {}) {

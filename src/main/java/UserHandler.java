@@ -44,10 +44,16 @@ public class UserHandler {
             } else {
                 response.setStatusCode(401);
             }
+        } else if (segmentsLength == 2 && method.equals("POST")) {
+            handleRegisterNewUser();
         } else if (segmentsLength == 3 && segments[2].equals("login") && method.equals("POST")) {
             handleAuthenticateUser();
-        } else if (segmentsLength == 3 && segments[2].equals("register") && method.equals("POST")) {
-            handleRegisterNewUser();
+        } else if (segmentsLength == 4 && segments[3].equals("password") && method.equals("PATCH")) {
+            if (hasActiveSession) {
+                handleChangePassword();
+            } else {
+                response.setStatusCode(401);
+            }
         } else {
             response.setStatusCode(404);
         }
@@ -114,6 +120,33 @@ public class UserHandler {
             response.setBody(JsonUserParser.mapUserToJson(user));
         } else {
             response.setStatusCode(409);
+        }
+    }
+
+    private void handleChangePassword() {
+        String requestBody = request.getBody();
+
+        Map<String, String> unauthenticatedUser = JsonUserParser.mapJsonToUserFields(requestBody);
+        int userId = Integer.parseInt(unauthenticatedUser.get("id"));
+        String currentPassword = unauthenticatedUser.get("currentPassword");
+        String newPassword = unauthenticatedUser.get("newPassword");
+
+        User savedUser = userService.getUserById(userId);
+
+        if (savedUser == null) {
+            response.setStatusCode(404);
+        } else if (userService.changePassword(savedUser, currentPassword, newPassword)) {
+            response.setStatusCode(200);
+            response.setReasonPhrase("OK");
+
+            String sessionId = UUID.randomUUID().toString();
+            SessionManager.setActiveSession(sessionId, savedUser);
+            String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
+            response.setHeader("Set-Cookie", cookieString);
+
+            response.setBody(JsonUserParser.mapUserToJson(savedUser));
+        } else {
+            response.setStatusCode(401);
         }
     }
 }
