@@ -22,8 +22,9 @@ public class UserService {
 
     public boolean changePassword(User user, String oldPassword, String newPassword) {
         if (user.verifyPassword(oldPassword)) {
-            user.setPasswordHash(PasswordUtil.hashPassword(newPassword));
-            return userDAO.updatePassword(user, newPassword);
+            String hashedPassword = PasswordUtil.hashPassword(newPassword);
+            user.setPasswordHash(hashedPassword);
+            return userDAO.updatePassword(user, hashedPassword);
         } else {
             return false;
         }
