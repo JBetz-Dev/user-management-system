@@ -88,7 +88,7 @@ public class UserHandler {
         String password = providedFields.get("password");
 
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
-            response.setStatusCode(404);
+            response.setStatusCode(400);
             return;
         }
 
@@ -113,17 +113,24 @@ public class UserHandler {
     private void handleRegisterNewUser() {
         String requestBody = request.getBody();
 
-        User user = userService.registerNewUser(JsonUserParser.mapJsonToUser(requestBody));
+        User user = JsonUserParser.mapJsonToUser(requestBody);
 
-        if (user != null) {
+        if (user == null) {
+            response.setStatusCode(400);
+            return;
+        }
+
+        User registeredUser = userService.registerNewUser(user);
+
+        if (registeredUser != null) {
             response.setStatusCode(201);
             response.setReasonPhrase("Created");
 
-            String sessionId = SessionManager.setActiveSession(user);
+            String sessionId = SessionManager.setActiveSession(registeredUser);
             String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
             response.setHeader("Set-Cookie", cookieString);
 
-            response.setBody(JsonUserParser.mapUserToJson(user));
+            response.setBody(JsonUserParser.mapUserToJson(registeredUser));
         } else {
             response.setStatusCode(409);
         }

@@ -20,14 +20,22 @@ if (loginForm) {
         }).then(response => {
             if (response.ok) {
                 return response.json();
+            } else if (response.status === 401 || response.status === 404) {
+                throw new Error("Invalid Attempt");
             } else {
                 throw new Error("Error authenticating user");
             }
         }).then(data => {
             sessionStorage.setItem("user", JSON.stringify(data));
             window.location.href = "user-area.html";
+            showToast("success", "Success!", "Logged in successfully!");
         }).catch(error => {
-            generateLoginError();
+            if (error.message === "Invalid Attempt") {
+                generateLoginError();
+            } else {
+                console.log("Error: ", error);
+                showToast("error", "Oops!", "Something went wrong!");
+            }
         });
     });
 }
@@ -49,14 +57,22 @@ if (signUpForm) {
         }).then(response => {
             if (response.ok) {
                 return response.json();
+            } else if (response.status === 409) {
+                throw new Error("Already Exists");
             } else {
                 throw new Error("Error registering user");
             }
         }).then(data => {
             sessionStorage.setItem("user", JSON.stringify(data));
             window.location.href = "user-area.html";
-        }).catch(() => {
-            generateRegistrationError();
+            showToast("success", "Success!", "Registered successfully!");
+        }).catch(error => {
+            if (error.message === "Already Exists") {
+                generateRegistrationError();
+            } else {
+                console.log("Error: ", error);
+                showToast("error", "Oops!", "Something went wrong!");
+            }
         })
     })
 }
@@ -69,10 +85,10 @@ if (listUsersButton) {
             method: "GET",
             headers: {"Accept": "application/json"},
         }).then(response => {
-            if (response.status === 401) {
-                throw new Error("Session Expired");
-            } else if (response.ok) {
+            if (response.ok) {
                 return response.json();
+            } else if (response.status === 401) {
+                throw new Error("Session Expired");
             } else {
                 throw new Error("Error fetching users list");
             }
@@ -81,6 +97,9 @@ if (listUsersButton) {
         }).catch(error => {
             if (error.message === "Session Expired") {
                 handleSessionExpiry();
+            } else {
+                console.log("Error: ", error.message);
+                showToast("error", "Oops!", "Something went wrong");
             }
         });
     });
@@ -103,79 +122,6 @@ if (userProfileContainer) {
     }
 }
 
-function redirectToLogin() {
-    window.location.href="login.html";
-}
-
-function redirectToRegistration() {
-    window.location.href="register.html";
-}
-
-function generateLoginError() {
-    let title = "Login Unsuccessful";
-    let content = "Login attempt unsuccessful - please try again or register as a new user.";
-
-    createModal(title, content);
-}
-
-function generateRegistrationError() {
-    let title = "Registration Unsuccessful";
-    let content = "Registration attempt unsuccessful - please try again.";
-
-    createModal(title, content);
-}
-
-function handleSessionExpiry() {
-    let title = "Session Expired";
-    let content = "Your session has expired - please log in again to continue";
-    let options = {
-        confirmAction: "redirectToLogin()",
-        confirmText: "Log In",
-    };
-
-    createModal(title, content, options);
-}
-
-function populateUsersList(users) {
-    let userListHTML = "";
-
-    users.forEach(user => {
-        userListHTML += `
-        <li class="user-item">
-            <div class="user-avatar">${user.username.substring(0,1).toUpperCase()}</div>
-            <div class="user-info">
-                <div class="user-name">${user.username}</div>
-                <div class="user-email">${user.email}</div>
-            </div>
-            <div class="user-role">Registered User</div>
-        </li>
-        `;
-    });
-
-    showUserListModal(userListHTML);
-}
-
-function showChangePasswordModal() {
-    let title = "Change Password";
-    let contentHTML = `
-        <form id="change-password-form">
-            <div class="form-group">
-                <label for="current-password">Current Password</label>
-                <input type="password" id="current-password" class="form-input" placeholder="Enter your current password" required>
-            </div>
-            <div class="form-group">
-                <label for="new-password">Password</label>
-                <input type="password" id="new-password" class="form-input" placeholder="Enter your new password" required>
-            </div>
-            <button type="button" class="form-btn" onclick="handleChangePassword()">
-                <i class="fas fa-user-plus"></i> Change Password
-            </button>
-        </form>
-    `;
-
-    createModal(title, contentHTML);
-}
-
 function handleChangePassword() {
     let currentPassword = document.getElementById('current-password').value;
     let newPassword = document.getElementById('new-password').value;
@@ -192,25 +138,120 @@ function handleChangePassword() {
                 newPassword: newPassword
             })
         }).then(response => {
-            if (response.status === 401) {
-                throw new Error("Session Expired");
-            } else if (response.ok) {
+            if (response.ok) {
                 return response.json();
+            } else if (response.status === 401) {
+                throw new Error("Session Expired");
             } else {
                 throw new Error("Error updating password");
             }
         }).then(data => {
-            console.log("Success: ", data);
+            sessionStorage.setItem("user", JSON.stringify(data));
             closeModal();
+            showToast("success", "Success!", "Password changed successfully");
         }).catch(error => {
             if (error.message === "Session Expired") {
                 handleSessionExpiry();
+            } else {
+                console.log("Error: ", error.message);
+                showToast("error", "Oops!", "Something went wrong");
             }
-            console.log("Error: ", error);
         });
     } else {
         handleSessionExpiry();
     }
+}
+
+function redirectToLogin() {
+    window.location.href = "login.html";
+}
+
+function redirectToRegistration() {
+    window.location.href = "register.html";
+}
+
+
+/* Modals */
+function generateLoginError() {
+    let title = "Login Failed";
+    let message = "Login unsuccessful - please try again or register as a new user"
+    let options = {
+        confirmAction: "redirectToRegistration()",
+        confirmText: "Register",
+    };
+
+    createModal(title, message, options);
+}
+
+function generateRegistrationError() {
+    let title = "Registration Failed";
+    let message = "Username already exist - please log in or try a different username.";
+    let options = {
+        confirmAction: "redirectToLogin()",
+        confirmText: "Login",
+    };
+
+    createModal(title, message, options);
+}
+
+function handleSessionExpiry() {
+    let title = "Session Expired";
+    let content = "Your session has expired - please log in again to continue";
+    let options = {
+        confirmAction: "redirectToLogin()",
+        confirmText: "Log In",
+    };
+
+    createModal(title, content, options);
+}
+
+function populateUsersList(users) {
+    let title = "Users List";
+    let userItemsHTML = "";
+
+    users.forEach(user => {
+        userItemsHTML += `
+        <li class="user-item">
+            <div class="user-avatar">${user.username.substring(0, 1).toUpperCase()}</div>
+            <div class="user-info">
+                <div class="user-name">${user.username}</div>
+                <div class="user-email">${user.email}</div>
+            </div>
+            <div class="user-role">Registered User</div>
+        </li>
+        `;
+    });
+
+    let userListHTML = `<ul class="user-list">${userItemsHTML}</ul>`;
+
+    createModal(title, userListHTML);
+}
+
+function showChangePasswordModal() {
+    let title = "Change Password";
+    let contentHTML = `
+        <form id="change-password-form">
+            <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input type="password" id="current-password" class="form-input" placeholder="Enter your current password" required>
+            </div>
+            <div class="form-group">
+                <label for="new-password">Password</label>
+                <input type="password" id="new-password" class="form-input" placeholder="Enter your new password" required>
+            </div>
+            <button type="submit" class="form-btn">
+                <i class="fas fa-user-plus"></i> Change Password
+            </button>
+        </form>
+    `;
+
+    createModal(title, contentHTML);
+
+    document.getElementById('change-password-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        handleChangePassword();
+    })
 }
 
 function createModal(title, content, options = {}) {
@@ -244,36 +285,93 @@ function createModal(title, content, options = {}) {
     return modalId;
 }
 
-function showUserListModal(content) {
-    const modalId = "modal" + Date.now();
-
-    const modalHTML = `
-    <div id=${modalId} class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">All Users</h5>
-                <button type="button" class="modal-close-x" onclick="document.getElementById('${modalId}').remove()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <ul class="user-list">
-                    ${content}
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <div class="btn-container">
-                    <button type="button" class="btn-secondary" onclick="document.getElementById('${modalId}').remove()">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    `;
-
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    const modal = document.getElementById(modalId);
-    setTimeout(() => modal.classList.add('show'), 10);
-}
-
 function closeModal() {
     document.querySelector('.modal').remove();
+}
+
+
+/* Toasts */
+let toastCounter = 0;
+
+function showToast(type = 'info', title = 'Notification', message = '', duration = 5000) {
+    const toastId = `toast-${++toastCounter}`;
+
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        container.id = 'toastContainer';
+        document.body.appendChild(container);
+    }
+
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.id = toastId;
+    toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="${icons[type] || icons.info}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    ${message ? `<div class="toast-message">${message}</div>` : ''}
+                </div>
+                <button class="toast-close" onclick="removeToast('${toastId}')">
+                    <i class="fas fa-times"></i>
+                </button>
+                ${duration > 0 ? `<div class="toast-progress" style="width: 100%;"></div>` : ''}
+            `;
+
+    container.appendChild(toast);
+
+    if (duration > 0) {
+        const progressBar = toast.querySelector('.toast-progress');
+        if (progressBar) {
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+                progressBar.style.transitionDuration = `${duration}ms`;
+            }, 10);
+        }
+
+        setTimeout(() => {
+            removeToast(toastId);
+        }, duration);
+    }
+
+    return toastId;
+}
+
+function removeToast(toastId) {
+    const toast = document.getElementById(toastId);
+    if (toast && !toast.classList.contains('removing')) {
+        toast.classList.add('removing');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+
+                const container = document.getElementById('toastContainer');
+                if (container && container.children.length === 0) {
+                    container.remove();
+                }
+            }
+        }, 300);
+    }
+}
+
+function clearAllToasts() {
+    const container = document.getElementById('toastContainer');
+    if (container) {
+        const toasts = container.querySelectorAll('.toast');
+        toasts.forEach(toast => {
+            if (!toast.classList.contains('removing')) {
+                removeToast(toast.id);
+            }
+        });
+    }
 }
