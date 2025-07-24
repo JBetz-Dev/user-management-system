@@ -30,6 +30,15 @@ public class UserService {
         }
     }
 
+    public boolean changeEmail(User user, String email, String password) {
+        if (user.verifyPassword(password)) {
+            user.setEmail(email);
+            return userDAO.updateEmail(user, email);
+        } else {
+            return false;
+        }
+    }
+
     public List<User> getAllUsers() {
         return userDAO.getAllUsers();
     }

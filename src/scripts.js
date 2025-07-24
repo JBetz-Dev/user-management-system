@@ -3,6 +3,7 @@ const signUpForm = document.getElementById('sign-up-form');
 const listUsersButton = document.getElementById('list-users-btn');
 const userProfileContainer = document.getElementById('user-profile');
 const changePasswordButton = document.getElementById('change-password-btn');
+const changeEmailButton = document.getElementById('change-email-btn');
 
 document.addEventListener('DOMContentLoaded', () => {
     let userProfile = JSON.parse(sessionStorage.getItem("user"));
@@ -126,6 +127,14 @@ if (changePasswordButton) {
     });
 }
 
+if (changeEmailButton) {
+    changeEmailButton.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        showChangeEmailModal();
+    });
+}
+
 if (userProfileContainer) {
     let userData = JSON.parse(sessionStorage.getItem("user"));
 
@@ -167,6 +176,47 @@ function handleChangePassword() {
                 handleSessionExpiry();
             } else {
                 console.log("Error: ", error.message);
+                showToast("error", "Oops!", "Something went wrong");
+            }
+        });
+    } else {
+        handleSessionExpiry();
+    }
+}
+
+function handleChangeEmail() {
+    let password = document.getElementById('password').value;
+    let newEmail = document.getElementById('new-email').value;
+    let userData = JSON.parse(sessionStorage.getItem("user"));
+
+    if (userData) {
+        fetch(`http://localhost:9000/users/${userData.id}/email/`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                id: userData.id,
+                password: password,
+                newEmail: newEmail
+            })
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 401) {
+                throw new Error("Session Expired");
+            } else {
+                throw new Error("Error updating email");
+            }
+        }).then(data => {
+            sessionStorage.setItem("user", JSON.stringify(data));
+            closeModal();
+            document.getElementById('profile-email').textContent = data.email;
+            showToast("success", "Success!", "Email changed successfully");
+        }).catch(error => {
+            if (error.message === "Session Expired") {
+                handleSessionExpiry();
+            } else {
+                console.log("Error: ", error.message, "Status: ", error.status);
                 showToast("error", "Oops!", "Something went wrong");
             }
         });
@@ -264,6 +314,33 @@ function showChangePasswordModal() {
         e.preventDefault();
 
         handleChangePassword();
+    })
+}
+
+function showChangeEmailModal() {
+    let title = "Change Email";
+    let contentHTML = `
+        <form id="change-email-form">
+            <div class="form-group">
+                <label for="new-email">New Email</label>
+                <input type="email" id="new-email" class="form-input" placeholder="Enter your new email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="form-btn">
+                <i class="fas fa-user-plus"></i> Change Email
+            </button>
+        </form>
+    `;
+
+    createModal(title, contentHTML);
+
+    document.getElementById('change-email-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        handleChangeEmail();
     })
 }
 

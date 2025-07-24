@@ -66,7 +66,6 @@ public class UserDAO {
         return null;
     }
 
-    // Updating just username for simplicity
     public boolean updateUsername(User user, String username) {
         try (Connection conn = dbc.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(
@@ -88,6 +87,21 @@ public class UserDAO {
                     "UPDATE users SET password = ? WHERE id = ?"
             );
             ps.setString(1, password);
+            ps.setInt(2, user.getId());
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateEmail(User user, String email) {
+        try (Connection conn = dbc.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE users SET email = ? WHERE id = ?"
+            );
+            ps.setString(1, email);
             ps.setInt(2, user.getId());
             ps.executeUpdate();
             return true;

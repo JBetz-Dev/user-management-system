@@ -53,6 +53,12 @@ public class UserHandler {
             } else {
                 response.setStatusCode(401);
             }
+        } else if (segmentsLength == 4 && segments[3].equals("email") && method.equals("PATCH")) {
+            if (hasActiveSession) {
+                handleChangeEmail();
+            } else {
+                response.setStatusCode(401);
+            }
         } else {
             response.setStatusCode(404);
         }
@@ -173,6 +179,52 @@ public class UserHandler {
             response.setReasonPhrase("OK");
 
             SessionManager.invalidateUserSessions(savedUser);
+            String sessionId = SessionManager.setActiveSession(savedUser);
+            String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
+            response.setHeader("Set-Cookie", cookieString);
+
+            response.setBody(JsonUserParser.mapUserToJson(savedUser));
+        } else {
+            response.setStatusCode(401);
+        }
+    }
+
+    private void handleChangeEmail() {
+        String requestBody = request.getBody();
+        Map<String, String> providedFields = JsonUserParser.parseJsonToFieldMap(requestBody);
+
+        String idString = providedFields.get("id");
+        String password = providedFields.get("password");
+        String newEmail = providedFields.get("newEmail");
+
+        if (idString == null || idString.isEmpty() || newEmail == null ||
+            newEmail.isEmpty() || password == null || password.isEmpty()) {
+            response.setStatusCode(400);
+            return;
+        }
+
+        int userId;
+
+        try {
+            userId = Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            response.setStatusCode(400);
+            return;
+        }
+
+        User savedUser = sessionData.user();
+
+        if (savedUser.getId() != userId) {
+            response.setStatusCode(403);
+            return;
+        }
+
+        boolean emailUpdated = userService.changeEmail(savedUser, newEmail, password);
+
+        if (emailUpdated) {
+            response.setStatusCode(200);
+            response.setReasonPhrase("OK");
+
             String sessionId = SessionManager.setActiveSession(savedUser);
             String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
             response.setHeader("Set-Cookie", cookieString);
