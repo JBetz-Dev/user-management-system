@@ -12,6 +12,10 @@ body {
     min-height: 100vh;
 }
 
+.hidden {
+    display: none; !important
+}
+
 /* Navigation */
 nav {
     background: rgba(255, 255, 255, 0.95);

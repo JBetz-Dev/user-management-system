@@ -20,9 +20,13 @@
             </a>
         </div>
         <div class="nav-buttons">
-            <a href="/src/login.html" class="btn btn-outline">Log In</a>
-            <a href="/src/register.html" class="btn btn-primary">Sign Up</a>
-            <a href="/src/profile.html" class="profile-nav-btn" title="profile"><i class="fas fa-user"></i></a>
+            <a href="/src/register.html" id="sign-up-btn" class="btn btn-primary">Sign Up</a>
+            <a href="/src/login.html" id="login-btn" class="btn btn-outline">Log In</a>
+            <a href="/src/user-area.html" id="user-area-btn" class="btn btn-primary hidden">User Area</a>
+            <button id="logout-btn" class="btn btn-outline hidden">Log Out</button>
+            <div id="profile-btn" class="hidden">
+                <a href="/src/profile.html" class="profile-nav-btn" title="profile"><i class="fas fa-user"></i></a>
+            </div>
         </div>
     </div>
 </nav>

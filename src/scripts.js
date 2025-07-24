@@ -4,6 +4,17 @@ const listUsersButton = document.getElementById('list-users-btn');
 const userProfileContainer = document.getElementById('user-profile');
 const changePasswordButton = document.getElementById('change-password-btn');
 
+document.addEventListener('DOMContentLoaded', () => {
+    let userProfile = JSON.parse(sessionStorage.getItem("user"));
+    if (userProfile && userProfile.active) {
+        document.getElementById('login-btn').classList.add('hidden');
+        document.getElementById('sign-up-btn').classList.add('hidden');
+        document.getElementById('logout-btn').classList.remove('hidden');
+        document.getElementById('user-area-btn').classList.remove('hidden');
+        document.getElementById('profile-btn').classList.remove('hidden');
+    }
+});
+
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -26,6 +37,7 @@ if (loginForm) {
                 throw new Error("Error authenticating user");
             }
         }).then(data => {
+            data.active = true;
             sessionStorage.setItem("user", JSON.stringify(data));
             window.location.href = "user-area.html";
             showToast("success", "Success!", "Logged in successfully!");
@@ -63,6 +75,7 @@ if (signUpForm) {
                 throw new Error("Error registering user");
             }
         }).then(data => {
+            data.active = true;
             sessionStorage.setItem("user", JSON.stringify(data));
             window.location.href = "user-area.html";
             showToast("success", "Success!", "Registered successfully!");
