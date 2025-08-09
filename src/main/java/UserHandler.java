@@ -142,15 +142,10 @@ public class UserHandler {
     private void handleLogoutUser() {
         User savedUser = sessionData.user();
 
-        if (savedUser == null) {
-            response.setStatusCode(401);
-            response.setReasonPhrase("Unauthorized");
-            String errorJson = createErrorJson("session_not_found", "No valid session found");
-            response.setBody(errorJson);
-            return;
+        if (savedUser != null) {
+            SessionManager.invalidateUserSessions(savedUser);
         }
 
-        SessionManager.invalidateUserSessions(savedUser);
         response.setStatusCode(200);
         response.setReasonPhrase("OK");
         response.setBody("{\"message\": \"Logged out successfully\"}");
