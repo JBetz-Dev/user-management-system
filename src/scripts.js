@@ -5,6 +5,7 @@ const userProfileContainer = document.getElementById('user-profile');
 const changePasswordButton = document.getElementById('change-password-btn');
 const changeEmailButton = document.getElementById('change-email-btn');
 
+/* Active User Management */
 document.addEventListener('DOMContentLoaded', () => {
     let userProfile = JSON.parse(sessionStorage.getItem("user"));
     if (userProfile && userProfile.active) {
@@ -14,7 +15,32 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('user-area-btn').classList.remove('hidden');
         document.getElementById('profile-btn').classList.remove('hidden');
     }
+
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+
+        handleLogout();
+    })
 });
+
+function handleLogout() {
+    fetch("http://localhost:9000/users/logout/", {
+        method: "POST",
+        credentials: "include",
+    }).then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error("Error logging out");
+        }
+    }).then(() => {
+        sessionStorage.removeItem("user");
+        showSuccessToastAndRedirect("Logged out successfully!", "index.html");
+    }).catch(error => {
+        console.log("Error: ", error);
+        showToast("error", "Oops!", "Something went wrong - please try again!");
+    });
+}
 
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -32,22 +58,27 @@ if (loginForm) {
         }).then(response => {
             if (response.ok) {
                 return response.json();
-            } else if (response.status === 401 || response.status === 404) {
-                throw new Error("Invalid Attempt");
             } else {
-                throw new Error("Error authenticating user");
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || "unknown_error");
+                });
             }
         }).then(data => {
             data.active = true;
             sessionStorage.setItem("user", JSON.stringify(data));
-            window.location.href = "user-area.html";
-            showToast("success", "Success!", "Logged in successfully!");
+            showSuccessToastAndRedirect("Logged in successfully!", "user-area.html");
         }).catch(error => {
-            if (error.message === "Invalid Attempt") {
-                generateLoginError();
-            } else {
-                console.log("Error: ", error);
-                showToast("error", "Oops!", "Something went wrong!");
+            switch (error.message) {
+                case "invalid_input":
+                    showToast("error", "Invalid Input", "Invalid input provided");
+                    break;
+                case "username_not_found":
+                case "invalid_password":
+                    generateLoginError();
+                    break;
+                default:
+                    showToast("error", "Oops!", "Something went wrong");
+                    break;
             }
         });
     });
@@ -70,22 +101,26 @@ if (signUpForm) {
         }).then(response => {
             if (response.ok) {
                 return response.json();
-            } else if (response.status === 409) {
-                throw new Error("Already Exists");
             } else {
-                throw new Error("Error registering user");
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || "unknown_error");
+                });
             }
         }).then(data => {
             data.active = true;
             sessionStorage.setItem("user", JSON.stringify(data));
-            window.location.href = "user-area.html";
-            showToast("success", "Success!", "Registered successfully!");
+            showSuccessToastAndRedirect("Registered successfully!", "user-area.html");
         }).catch(error => {
-            if (error.message === "Already Exists") {
-                generateRegistrationError();
-            } else {
-                console.log("Error: ", error);
-                showToast("error", "Oops!", "Something went wrong!");
+            switch (error.message) {
+                case "invalid_input":
+                    showToast("error", "Invalid Input", "Invalid input provided");
+                    break;
+                case "username_already_exists":
+                    generateRegistrationError();
+                    break;
+                default:
+                    showToast("error", "Oops!", "Something went wrong");
+                    break;
             }
         })
     })
@@ -97,22 +132,22 @@ if (listUsersButton) {
 
         fetch("http://localhost:9000/users/", {
             method: "GET",
+            credentials: "include",
             headers: {"Accept": "application/json"},
         }).then(response => {
             if (response.ok) {
                 return response.json();
-            } else if (response.status === 401) {
-                throw new Error("Session Expired");
             } else {
-                throw new Error("Error fetching users list");
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || "unknown_error");
+                });
             }
         }).then(data => {
             populateUsersList(data);
         }).catch(error => {
-            if (error.message === "Session Expired") {
+            if (error.message === "session_not_found") {
                 handleSessionExpiry();
             } else {
-                console.log("Error: ", error.message);
                 showToast("error", "Oops!", "Something went wrong");
             }
         });
@@ -162,21 +197,30 @@ function handleChangePassword() {
         }).then(response => {
             if (response.ok) {
                 return response.json();
-            } else if (response.status === 401) {
-                throw new Error("Session Expired");
             } else {
-                throw new Error("Error updating password");
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || "unknown_error");
+                });
             }
         }).then(data => {
             sessionStorage.setItem("user", JSON.stringify(data));
             closeModal();
-            showToast("success", "Success!", "Password changed successfully");
+            showSuccessToastAndRedirect("Password changed successfully - please log in again to continue", "login.html");
         }).catch(error => {
-            if (error.message === "Session Expired") {
-                handleSessionExpiry();
-            } else {
-                console.log("Error: ", error.message);
-                showToast("error", "Oops!", "Something went wrong");
+            switch (error.message) {
+                case "invalid_input":
+                    showToast("error", "Invalid Input", "Invalid input provided");
+                    break;
+                case "session_not_found":
+                case "session_user_mismatch":
+                    handleSessionExpiry();
+                    break;
+                case "invalid_password":
+                    showToast("error", "Invalid Password", "Please try again");
+                    break;
+                default:
+                    showToast("error", "Oops!", "Something went wrong");
+                    break;
             }
         });
     } else {
@@ -202,10 +246,10 @@ function handleChangeEmail() {
         }).then(response => {
             if (response.ok) {
                 return response.json();
-            } else if (response.status === 401) {
-                throw new Error("Session Expired");
             } else {
-                throw new Error("Error updating email");
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || "unknown_error");
+                });
             }
         }).then(data => {
             sessionStorage.setItem("user", JSON.stringify(data));
@@ -213,11 +257,20 @@ function handleChangeEmail() {
             document.getElementById('profile-email').textContent = data.email;
             showToast("success", "Success!", "Email changed successfully");
         }).catch(error => {
-            if (error.message === "Session Expired") {
-                handleSessionExpiry();
-            } else {
-                console.log("Error: ", error.message, "Status: ", error.status);
-                showToast("error", "Oops!", "Something went wrong");
+            switch (error.message) {
+                case "invalid_input":
+                    showToast("error", "Invalid Input", "Invalid input provided");
+                    break;
+                case "session_not_found":
+                case "session_user_mismatch":
+                    handleSessionExpiry();
+                    break;
+                case "invalid_password":
+                    showToast("error", "Invalid Password", "Please try again");
+                    break;
+                default:
+                    showToast("error", "Oops!", "Something went wrong");
+                    break;
             }
         });
     } else {
@@ -435,6 +488,13 @@ function showToast(type = 'info', title = 'Notification', message = '', duration
     }
 
     return toastId;
+}
+
+function showSuccessToastAndRedirect(message, redirectUrl, delay = 500) {
+    showToast("success", "Success!", message);
+    setTimeout(() => {
+        window.location.href = redirectUrl;
+    }, delay);
 }
 
 function removeToast(toastId) {

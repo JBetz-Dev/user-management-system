@@ -35,12 +35,11 @@ public class HttpRequestHandler {
             }
 
             int responseStatusCode = response.getStatusCode();
-            if (responseStatusCode >= 400) {
+            if (responseStatusCode >= 400 && (response.getBody() == null || response.getBody().isEmpty())) {
                 response = generateErrorResponse(responseStatusCode);
             }
 
             finalizeResponseHeaders();
-            System.out.println(response.toString());
             output.write(response.toString().getBytes());
             output.flush();
         } catch (IOException e) {

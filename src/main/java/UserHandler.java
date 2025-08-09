@@ -42,25 +42,39 @@ public class UserHandler {
                 handleGetAllUsers();
             } else {
                 response.setStatusCode(401);
+                response.setReasonPhrase("Unauthorized");
+                String errorJson = createErrorJson("session_not_found", "No valid session found");
+                response.setBody(errorJson);
             }
         } else if (segmentsLength == 2 && method.equals("POST")) {
             handleRegisterNewUser();
         } else if (segmentsLength == 3 && segments[2].equals("login") && method.equals("POST")) {
             handleAuthenticateUser();
+        } else if (segmentsLength == 3 && segments[2].equals("logout") && method.equals("POST")) {
+            handleLogoutUser();
         } else if (segmentsLength == 4 && segments[3].equals("password") && method.equals("PATCH")) {
             if (hasActiveSession) {
                 handleChangePassword();
             } else {
                 response.setStatusCode(401);
+                response.setReasonPhrase("Unauthorized");
+                String errorJson = createErrorJson("session_not_found", "No valid session found");
+                response.setBody(errorJson);
             }
         } else if (segmentsLength == 4 && segments[3].equals("email") && method.equals("PATCH")) {
             if (hasActiveSession) {
                 handleChangeEmail();
             } else {
                 response.setStatusCode(401);
+                response.setReasonPhrase("Unauthorized");
+                String errorJson = createErrorJson("session_not_found", "No valid session found");
+                response.setBody(errorJson);
             }
         } else {
             response.setStatusCode(404);
+            response.setReasonPhrase("Not Found");
+            String errorJson = createErrorJson("path_not_found", "Requested path not found");
+            response.setBody(errorJson);
         }
 
         return response;
@@ -95,6 +109,9 @@ public class UserHandler {
 
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             response.setStatusCode(400);
+            response.setReasonPhrase("Bad Request");
+            String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+            response.setBody(errorJson);
             return;
         }
 
@@ -102,6 +119,9 @@ public class UserHandler {
 
         if (savedUser == null) {
             response.setStatusCode(404);
+            response.setReasonPhrase("Not Found");
+            String errorJson = createErrorJson("username_not_found", "Requested username not found");
+            response.setBody(errorJson);
         } else if (savedUser.verifyPassword(password)) {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
@@ -113,7 +133,27 @@ public class UserHandler {
             response.setBody(JsonUserParser.mapUserToJson(savedUser));
         } else {
             response.setStatusCode(401);
+            response.setReasonPhrase("Unauthorized");
+            String errorJson = createErrorJson("invalid_password", "Invalid password provided");
+            response.setBody(errorJson);
         }
+    }
+
+    private void handleLogoutUser() {
+        User savedUser = sessionData.user();
+
+        if (savedUser == null) {
+            response.setStatusCode(401);
+            response.setReasonPhrase("Unauthorized");
+            String errorJson = createErrorJson("session_not_found", "No valid session found");
+            response.setBody(errorJson);
+            return;
+        }
+
+        SessionManager.invalidateUserSessions(savedUser);
+        response.setStatusCode(200);
+        response.setReasonPhrase("OK");
+        response.setBody("{\"message\": \"Logged out successfully\"}");
     }
 
     private void handleRegisterNewUser() {
@@ -123,6 +163,9 @@ public class UserHandler {
 
         if (user == null) {
             response.setStatusCode(400);
+            response.setReasonPhrase("Bad Request");
+            String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+            response.setBody(errorJson);
             return;
         }
 
@@ -139,6 +182,9 @@ public class UserHandler {
             response.setBody(JsonUserParser.mapUserToJson(registeredUser));
         } else {
             response.setStatusCode(409);
+            response.setReasonPhrase("Conflict");
+            String errorJson = createErrorJson("username_already_exists", "Requested username already exists");
+            response.setBody(errorJson);
         }
     }
 
@@ -153,6 +199,9 @@ public class UserHandler {
         if (idString == null || idString.isEmpty() || currentPassword == null ||
             currentPassword.isEmpty() || newPassword == null || newPassword.isEmpty()) {
             response.setStatusCode(400);
+            response.setReasonPhrase("Bad Request");
+            String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+            response.setBody(errorJson);
             return;
         }
 
@@ -162,13 +211,27 @@ public class UserHandler {
             userId = Integer.parseInt(idString);
         } catch (NumberFormatException e) {
             response.setStatusCode(400);
+            response.setReasonPhrase("Bad Request");
+            String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+            response.setBody(errorJson);
             return;
         }
 
         User savedUser = sessionData.user();
 
+        if (savedUser == null) {
+            response.setStatusCode(401);
+            response.setReasonPhrase("Unauthorized");
+            String errorJson = createErrorJson("session_not_found", "No valid session found");
+            response.setBody(errorJson);
+            return;
+        }
+
         if (savedUser.getId() != userId) {
             response.setStatusCode(403);
+            response.setReasonPhrase("Forbidden");
+            String errorJson = createErrorJson("session_user_mismatch", "The provided user does not match the current session user");
+            response.setBody(errorJson);
             return;
         }
 
@@ -186,6 +249,9 @@ public class UserHandler {
             response.setBody(JsonUserParser.mapUserToJson(savedUser));
         } else {
             response.setStatusCode(401);
+            response.setReasonPhrase("Unauthorized");
+            String errorJson = createErrorJson("invalid_password", "Invalid password provided");
+            response.setBody(errorJson);
         }
     }
 
@@ -200,6 +266,9 @@ public class UserHandler {
         if (idString == null || idString.isEmpty() || newEmail == null ||
             newEmail.isEmpty() || password == null || password.isEmpty()) {
             response.setStatusCode(400);
+            response.setReasonPhrase("Bad Request");
+            String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+            response.setBody(errorJson);
             return;
         }
 
@@ -209,13 +278,27 @@ public class UserHandler {
             userId = Integer.parseInt(idString);
         } catch (NumberFormatException e) {
             response.setStatusCode(400);
+            response.setReasonPhrase("Bad Request");
+            String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+            response.setBody(errorJson);
             return;
         }
 
         User savedUser = sessionData.user();
 
+        if (savedUser == null) {
+            response.setStatusCode(401);
+            response.setReasonPhrase("Unauthorized");
+            String errorJson = createErrorJson("session_not_found", "No valid session found");
+            response.setBody(errorJson);
+            return;
+        }
+
         if (savedUser.getId() != userId) {
             response.setStatusCode(403);
+            response.setReasonPhrase("Forbidden");
+            String errorJson = createErrorJson("session_user_mismatch", "The provided user does not match the current session user");
+            response.setBody(errorJson);
             return;
         }
 
@@ -232,6 +315,13 @@ public class UserHandler {
             response.setBody(JsonUserParser.mapUserToJson(savedUser));
         } else {
             response.setStatusCode(401);
+            response.setReasonPhrase("Unauthorized");
+            String errorJson = createErrorJson("invalid_password", "Unable to authenticate provided password");
+            response.setBody(errorJson);
         }
+    }
+
+    private String createErrorJson(String error, String message) {
+        return String.format("{\"error\": \"%s\", \"message\": \"%s\"}", error, message);
     }
 }
