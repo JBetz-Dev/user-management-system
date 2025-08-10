@@ -52,13 +52,14 @@ public class User {
         return PasswordUtil.verifyPassword(password, passwordHash);
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-               "id=" + id +
-               ", username='" + username + '\'' +
-               ", email='" + email + '\'' +
-               ", passwordHash='" + passwordHash + '\'' +
-               '}';
+    public String toJson() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"id\":").append(JsonUtil.escapeJson(String.valueOf(id))).append(",");
+        sb.append("\"username\":\"").append(JsonUtil.escapeJson(username)).append("\",");
+        sb.append("\"email\":\"").append(JsonUtil.escapeJson(email)).append("\"");
+        sb.append("}");
+
+        return sb.toString();
     }
 }

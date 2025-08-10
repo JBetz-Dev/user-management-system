@@ -75,7 +75,7 @@ public class UserHandler {
         sb.append("[");
         if (!users.isEmpty()) {
             for (User user : users) {
-                String userJson = JsonUserParser.mapUserToJson(user);
+                String userJson = user.toJson();
                 sb.append(userJson).append(",");
             }
 
@@ -97,8 +97,7 @@ public class UserHandler {
                 prepareUsernameNotFoundResponse();
             } else if (savedUser.verifyPassword(password)) {
                 setActiveSessionWithCookie(savedUser);
-                String jsonResponseBody = JsonUserParser.mapUserToJson(savedUser);
-                prepareSuccessfulResponse(200, "OK", jsonResponseBody);
+                prepareSuccessfulResponse(200, "OK", savedUser.toJson());
             } else {
                 prepareInvalidPasswordResponse();
             }
@@ -114,28 +113,31 @@ public class UserHandler {
             SessionManager.invalidateUserSessions(savedUser);
         }
 
-        String jsonResponseBody = "{\"message\": \"Logged out successfully\"}";
-        prepareSuccessfulResponse(200, "OK", jsonResponseBody);
+        prepareSuccessfulResponse(200, "OK",
+                "{\"message\": \"Logged out successfully\"}");
     }
 
     private void handleRegisterNewUser() {
-        String requestBody = request.getBody();
-        User user = JsonUserParser.mapJsonToUser(requestBody);
+        try {
+            Map<String, String> requestFields = getExpectedRequestBodyFields(
+                    List.of("username", "email", "password"));
+            String username = requestFields.get("username");
+            String email = requestFields.get("email");
+            String password = requestFields.get("password");
 
-        if (user == null) {
+            User registeredUser = userService.registerNewUser(
+                    new User(username, email, password));
+
+            if (registeredUser != null) {
+                setActiveSessionWithCookie(registeredUser);
+                prepareSuccessfulResponse(201, "Created", registeredUser.toJson());
+            } else {
+                prepareUsernameAlreadyExistsResponse();
+            }
+        } catch (InvalidRequestFieldException e) {
             prepareInvalidInputResponse();
-            return;
         }
 
-        User registeredUser = userService.registerNewUser(user);
-
-        if (registeredUser != null) {
-            setActiveSessionWithCookie(registeredUser);
-            String jsonResponseBody = JsonUserParser.mapUserToJson(registeredUser);
-            prepareSuccessfulResponse(201, "Created", jsonResponseBody);
-        } else {
-            prepareUsernameAlreadyExistsResponse();
-        }
     }
 
     private void handleChangePassword() {
@@ -162,8 +164,7 @@ public class UserHandler {
             if (passwordUpdated) {
                 SessionManager.invalidateUserSessions(savedUser);
                 setActiveSessionWithCookie(savedUser);
-                String jsonResponseBody = JsonUserParser.mapUserToJson(savedUser);
-                prepareSuccessfulResponse(200, "OK", jsonResponseBody);
+                prepareSuccessfulResponse(200, "OK", savedUser.toJson());
             } else {
                 prepareInvalidPasswordResponse();
             }
@@ -175,10 +176,10 @@ public class UserHandler {
     private void handleChangeEmail() {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(
-                    List.of("id", "email", "password"));
+                    List.of("id", "newEmail", "password"));
             User savedUser = sessionData.user();
             int userId = parseUserId(requestFields.get("id"));
-            String newEmail = requestFields.get("email");
+            String newEmail = requestFields.get("newEmail");
             String password = requestFields.get("password");
 
             if (savedUser == null) {
@@ -195,8 +196,7 @@ public class UserHandler {
 
             if (emailUpdated) {
                 setActiveSessionWithCookie(savedUser);
-                String jsonResponseBody = JsonUserParser.mapUserToJson(savedUser);
-                prepareSuccessfulResponse(200, "OK", jsonResponseBody);
+                prepareSuccessfulResponse(200, "OK", savedUser.toJson());
             } else {
                 prepareInvalidPasswordResponse();
             }
@@ -272,7 +272,7 @@ public class UserHandler {
 
     private Map<String, String> getExpectedRequestBodyFields(List<String> expectedFields)
             throws InvalidRequestFieldException, NumberFormatException {
-        Map<String, String> providedFields = JsonUserParser.parseJsonToFieldMap(request.getBody());
+        Map<String, String> providedFields = JsonUtil.parseJsonToFieldMap(request.getBody());
 
         for (String expectedField : expectedFields) {
             String providedField = providedFields.get(expectedField);
@@ -296,7 +296,7 @@ public class UserHandler {
         return parsedUserId;
     }
 
-    public static class InvalidRequestFieldException extends Exception {
+    private static class InvalidRequestFieldException extends Exception {
         InvalidRequestFieldException(String message) {
             super(message);
         }
