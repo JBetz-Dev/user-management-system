@@ -5,7 +5,6 @@ const userProfileContainer = document.getElementById('user-profile');
 const changePasswordButton = document.getElementById('change-password-btn');
 const changeEmailButton = document.getElementById('change-email-btn');
 
-/* Active User Management */
 document.addEventListener('DOMContentLoaded', () => {
     let userProfile = JSON.parse(sessionStorage.getItem("user"));
     if (userProfile && userProfile.active) {
@@ -21,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         handleLogout();
     })
+
+    addPasswordRequirementsEventListener();
 });
 
 function handleLogout() {
@@ -50,6 +51,11 @@ if (loginForm) {
             username: document.getElementById('login-username').value,
             password: document.getElementById('login-password').value,
         };
+
+        if (!fieldValueProvided(userData.username, "Username") ||
+            !fieldValueProvided(userData.password, "Password")) {
+            return;
+        }
 
         fetch("http://localhost:9000/users/login/", {
             method: "POST",
@@ -92,6 +98,12 @@ if (signUpForm) {
             username: document.getElementById('sign-up-username').value,
             email: document.getElementById('sign-up-email').value,
             password: document.getElementById('sign-up-password').value
+        }
+
+        if (!validateField(userData.username, "Username") ||
+            !validateField(userData.email, "Email") ||
+            !validateField(userData.password, "Password")) {
+            return;
         }
 
         fetch("http://localhost:9000/users/", {
@@ -179,10 +191,40 @@ if (userProfileContainer) {
     }
 }
 
+function addPasswordRequirementsEventListener() {
+    const passwordRequirementsToggle = document.getElementById('password-requirements-toggle');
+
+    if (passwordRequirementsToggle) {
+        passwordRequirementsToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const content = document.getElementById('requirements-content');
+            const icon = document.getElementById('requirements-icon');
+
+            content.classList.toggle('expanded');
+            icon.classList.toggle('expanded');
+        })
+    }
+}
+
 function handleChangePassword() {
     let currentPassword = document.getElementById('current-password').value;
     let newPassword = document.getElementById('new-password').value;
     let userData = JSON.parse(sessionStorage.getItem("user"));
+
+    if (!fieldValueProvided(currentPassword, "Password") ||
+        !validateField(newPassword, "Password")) {
+        return;
+    }
+
+    if (newPassword === currentPassword) {
+        showToast(
+            "error",
+            "Invalid Password",
+            "Your new password must be different from your old password - please try again"
+        );
+        return;
+    }
 
     if (userData) {
         fetch(`http://localhost:9000/users/${userData.id}/password/`, {
@@ -232,6 +274,11 @@ function handleChangeEmail() {
     let password = document.getElementById('password').value;
     let newEmail = document.getElementById('new-email').value;
     let userData = JSON.parse(sessionStorage.getItem("user"));
+
+    if (!validateField(newEmail, "Email") ||
+        !fieldValueProvided(password, "Password")) {
+        return;
+    }
 
     if (userData) {
         fetch(`http://localhost:9000/users/${userData.id}/email/`, {
@@ -284,6 +331,67 @@ function redirectToLogin() {
 
 function redirectToRegistration() {
     window.location.href = "register.html";
+}
+
+
+/* Validation */
+function validateField(fieldValue, fieldName) {
+    if (!fieldValueProvided(fieldValue, fieldName)) {
+        return false;
+    }
+
+    let errorMessage;
+    let validatorMethod;
+
+    switch (fieldName) {
+        case "Username":
+            validatorMethod = isValidUsername;
+            errorMessage = "Username must be between 4-25 characters - please try again";
+            break;
+        case "Email":
+            validatorMethod = isValidEmail;
+            errorMessage = "Invalid email provided - please try again";
+            break;
+        case "Password":
+            validatorMethod = isValidPassword;
+            errorMessage = "Password does not meet the complexity requirements - please try again";
+            break;
+    }
+
+    if (!validatorMethod(fieldValue)) {
+        showToast("error", `Invalid ${fieldName} Provided`, `${errorMessage}`);
+        return false;
+    }
+    return true;
+}
+
+function fieldValueProvided(fieldValue, fieldName) {
+    if (!fieldValue.trim()) {
+        showToast("error",
+            `${fieldName} Required`,
+            `You must enter a ${fieldName.toLowerCase()} - please try again`
+        );
+        return false;
+    }
+    return true;
+}
+
+function isValidUsername(username) {
+    const usernameRegex = /^[a-zA-Z0-9._-]{4,25}$/;
+
+    return usernameRegex.test(username);
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    return emailRegex.test(email);
+}
+
+function isValidPassword(password) {
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,40}$/;
+
+    return passwordRegex.test(password);
 }
 
 
@@ -346,14 +454,40 @@ function populateUsersList(users) {
 function showChangePasswordModal() {
     let title = "Change Password";
     let contentHTML = `
-        <form id="change-password-form">
+        <form id="change-password-form" novalidate>
             <div class="form-group">
                 <label for="current-password">Current Password</label>
-                <input type="password" id="current-password" class="form-input" placeholder="Enter your current password" required>
+                <input type="password" id="current-password" class="form-input" placeholder="Enter your current password">
             </div>
             <div class="form-group">
-                <label for="new-password">Password</label>
-                <input type="password" id="new-password" class="form-input" placeholder="Enter your new password" required>
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" class="form-input" placeholder="Enter your new password">
+                <div class="password-requirements">
+                    <div class="requirements-toggle" id="password-requirements-toggle">
+                        <span class="requirements-toggle-text">Password requirements</span>
+                        <i class="fas fa-chevron-down requirements-icon" id="requirements-icon"></i>
+                    </div>
+                    <div class="requirements-content" id="requirements-content">
+                        <ul class="requirements-list">
+                            <li class="requirements-item">
+                                <i class="fas fa-circle requirements-item-icon"></i>
+                                <span>Between 8 and 40 characters long</span>
+                            </li>
+                            <li class="requirements-item">
+                                <i class="fas fa-circle requirements-item-icon"></i>
+                                <span>Contains at least one uppercase and one lowercase letter</span>
+                            </li>
+                            <li class="requirements-item">
+                                <i class="fas fa-circle requirements-item-icon"></i>
+                                <span>Contains at least one number</span>
+                            </li>
+                            <li class="requirements-item">
+                                <i class="fas fa-circle requirements-item-icon"></i>
+                                <span>Contains at least one special character</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             <button type="submit" class="form-btn">
                 <i class="fas fa-user-plus"></i> Change Password
@@ -367,20 +501,22 @@ function showChangePasswordModal() {
         e.preventDefault();
 
         handleChangePassword();
-    })
+    });
+
+    addPasswordRequirementsEventListener();
 }
 
 function showChangeEmailModal() {
     let title = "Change Email";
     let contentHTML = `
-        <form id="change-email-form">
+        <form id="change-email-form" novalidate>
             <div class="form-group">
                 <label for="new-email">New Email</label>
-                <input type="email" id="new-email" class="form-input" placeholder="Enter your new email" required>
+                <input type="email" id="new-email" class="form-input" placeholder="Enter your new email">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+                <input type="password" id="password" class="form-input" placeholder="Enter your password">
             </div>
             <button type="submit" class="form-btn">
                 <i class="fas fa-user-plus"></i> Change Email

@@ -352,6 +352,88 @@ nav {
     transform: translateY(0);
 }
 
+
+/* Password Requirements Styles */
+.password-requirements {
+    margin-top: 0.75rem;
+}
+
+.requirements-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: rgba(102, 126, 234, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.requirements-toggle:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.2);
+}
+
+.requirements-toggle-text {
+    font-size: 0.9rem;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.requirements-icon {
+    color: #667eea;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.requirements-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.requirements-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    border-top: none;
+}
+
+.requirements-content.expanded {
+    max-height: 200px;
+    padding: 1rem;
+}
+
+.requirements-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.requirements-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+.requirements-item:last-child {
+    margin-bottom: 0;
+}
+
+.requirements-item-icon {
+    color: #667eea;
+    font-size: 0.8rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+
 /* Profile Styles */
 .profile-container {
     background: white;
