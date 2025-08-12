@@ -23,16 +23,13 @@ export const SESSION_STORAGE_KEYS = {
 
 export const VALIDATION_RULES = {
     USERNAME: {
-        REGEX: /^[a-zA-Z0-9._-]{4,25}$/,
-        ERROR_MESSAGE: "Username must be between 4-25 characters - please try again"
+        REGEX: /^[a-zA-Z0-9._-]{4,25}$/
     },
     EMAIL: {
-        REGEX: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,50}$/,
-        ERROR_MESSAGE: "Invalid email provided - please try again"
+        REGEX: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,50}$/
     },
     PASSWORD: {
-        REGEX: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,40}$/,
-        ERROR_MESSAGE: "Password does not meet the complexity requirements - please try again"
+        REGEX: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,40}$/
     }
 }
 
@@ -55,12 +52,22 @@ export const SUCCESS_MESSAGES = {
 };
 
 export const ERROR_MESSAGES = {
-    LOGIN_FAILED: "Login unsuccessful - please try again or register as a new user",
-    USERNAME_EXISTS: "Username already exist - please log in or try a different username",
-    SESSION_EXPIRED: "Your session has expired - please log in again to continue",
-    EMPTY_FORM_FIELD: (fieldName) => `You must enter a ${fieldName.toLowerCase()} - please try again`,
-    INVALID_PASSWORD: "Invalid password - please try again",
-    DUPLICATE_PASSWORD: "Your new password must be different from your old password - please try again",
-    INVALID_INPUT: "Invalid input provided - please try again",
+    VALIDATION: {
+        INVALID_USERNAME: "Username must be between 4-25 characters - please try again",
+        USERNAME_ALREADY_EXISTS: "Username already exist - please log in or try a different username",
+        INVALID_EMAIL: "Invalid email provided - please try again",
+        EMAIL_ALREADY_EXISTS: "Email already exists - please log in or try a different email",
+        INVALID_PASSWORD: "Password does not meet the complexity requirements - please try again",
+        PASSWORD_SAME_AS_CURRENT: "Your new password must be different from your old password - please try again"
+    },
+    AUTH: {
+        LOGIN_FAILED: "Login unsuccessful - please try again or register as a new user",
+        INVALID_PASSWORD: "Invalid password - please try again",
+        SESSION_EXPIRED: "Your session has expired - please log in again to continue"
+    },
+    INPUT: {
+        NO_VALUE_PROVIDED: (fieldName) => `You must enter a ${fieldName.toLowerCase()} - please try again`,
+        INVALID: "Invalid input provided - please try again"
+    },
     DEFAULT: "Something went wrong - please try again"
 };
