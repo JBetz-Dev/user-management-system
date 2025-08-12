@@ -1,5 +1,5 @@
-import { VALIDATION_RULES, ERROR_MESSAGES } from "../utils/constants.js";
-import { Toast } from "./toast.js";
+import { VALIDATION_RULES, ERROR_MESSAGES } from "./constants.js";
+import { Toast } from "../components/toast.js";
 
 class ValidatorUtil {
 
