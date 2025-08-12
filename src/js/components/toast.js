@@ -3,14 +3,14 @@ import {TOAST_CONFIG} from "../utils/constants.js";
 class ToastComponent {
     constructor() {
         this.counter = 0;
-        this.container = null; //let container = document.getElementById("toastContainer");
+        this.container = null;
     }
 
     show(type = "info", title = "Notification", message = "", duration = TOAST_CONFIG.DEFAULT_DURATION) {
         const toastId = `toast-${++this.counter}`;
         this.#ensureContainer();
 
-        const toast = this.#createToastElement(toastId, type, title, message, duration);
+        const toast = this.#createToast(toastId, type, title, message, duration);
         this.container.appendChild(toast);
 
         if (duration > 0) {
@@ -44,12 +44,12 @@ class ToastComponent {
         }
     }
 
-    clear() {
+    removeAll() {
         if (this.container) {
             const toasts = this.container.querySelectorAll(".toast");
             toasts.forEach(toast => {
                 if (!toast.classList.contains("removing")) {
-                    removeToast(toast.id);
+                    this.remove(toast.id);
                 }
             });
         }
@@ -64,63 +64,78 @@ class ToastComponent {
         }
     }
 
-    #createToastElement(toastId, type, title, message, duration) {
+    #createToast(toastId, type, title, message, duration) {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.id = toastId;
 
-        const toastIcon = document.createElement('div');
-        toastIcon.className = "toast-icon";
-        toastIcon.innerHTML = `
-            <i class="${TOAST_CONFIG.ICONS[type.toUpperCase()] || TOAST_CONFIG.ICONS.INFO}"></i>
-        `;
+        const toastIcon = this.#createToastIcon(type);
         toast.appendChild(toastIcon);
 
+        const toastContent = this.#createToastContent(title, message);
+        toast.appendChild(toastContent);
+
+        const toastCloseButton = this.#createToastCloseButton(toastId);
+        toast.appendChild(toastCloseButton);
+
+        return toast;
+    }
+
+    #createToastIcon(type) {
+        const toastIcon = document.createElement('div');
+        toastIcon.className = "toast-icon";
+
+        const icon = document.createElement('i');
+        icon.className = `${TOAST_CONFIG.ICONS[type.toUpperCase()] || TOAST_CONFIG.ICONS.INFO}`;
+        toastIcon.appendChild(icon);
+
+        return toastIcon;
+    }
+
+    #createToastContent(title, message) {
         const toastContent = document.createElement('div');
         toastContent.className = "toast-content";
 
         const toastTitle = document.createElement('div');
         toastTitle.className = "toast-title";
-        toastTitle.innerText = title;
+        toastTitle.textContent = title;
         toastContent.appendChild(toastTitle);
 
         if (message) {
             const messageContainer = document.createElement('div');
             messageContainer.className = "toast-message";
-            messageContainer.innerText = message;
+            messageContainer.textContent = message;
             toastContent.appendChild(messageContainer);
         }
 
-        toast.appendChild(toastContent);
+        return toastContent;
+    }
 
+    #createToastCloseButton(toastId) {
         const toastCloseButton = document.createElement('button');
         toastCloseButton.className = "toast-close";
-        toastCloseButton.innerHTML = `<i class="fas fa-times"></i>`;
-        toastCloseButton.addEventListener('click', (e) => {
-            e.preventDefault();
+
+        const icon = document.createElement('i');
+        icon.className = "fas fa-times";
+        toastCloseButton.appendChild(icon);
+
+        toastCloseButton.addEventListener('click', () => {
             this.remove(toastId);
         });
-        toast.appendChild(toastCloseButton);
 
-        if (duration > 0) {
-            const toastProgress = document.createElement('div');
-            toastProgress.className = "toast-progress";
-            toastProgress.style.width = "100%";
-            toast.appendChild(toastProgress);
-        }
-
-        return toast;
+        return toastCloseButton;
     }
 
     #setupProgressBar(toast, duration) {
-        const progressBar = toast.querySelector(".toast-progress");
+        const progressBar = document.createElement('div');
+        progressBar.className = "toast-progress";
+        progressBar.style.width = "100%";
+        toast.appendChild(progressBar);
 
-        if (progressBar) {
-            setTimeout(() => {
-                progressBar.style.width = "0%";
-                progressBar.style.transitionDuration = `${duration}ms`;
-            }, 10);
-        }
+        setTimeout(() => {
+            progressBar.style.width = "0%";
+            progressBar.style.transitionDuration = `${duration}ms`;
+        }, 10);
     }
 
     #cleanupContainer() {
