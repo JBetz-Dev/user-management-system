@@ -85,6 +85,20 @@ class ModalComponent {
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('btn-container');
 
+        const closeButton = this.#createCloseButton(modalId, options);
+        buttonContainer.appendChild(closeButton);
+
+        if (options.confirmText) {
+            const confirmButton = this.#createConfirmButton(modalId, options);
+            buttonContainer.appendChild(confirmButton);
+        }
+
+        modalFooter.appendChild(buttonContainer);
+
+        return modalFooter;
+    }
+
+    #createCloseButton(modalId, options) {
         const closeButton = document.createElement('button');
         closeButton.type = "button";
         closeButton.classList.add('btn-secondary');
@@ -92,22 +106,20 @@ class ModalComponent {
         closeButton.addEventListener('click', () => {
             this.#handleClose(modalId, options);
         });
-        buttonContainer.appendChild(closeButton);
 
-        if (options.confirmText) {
-            const confirmButton = document.createElement('button');
-            confirmButton.type = "button";
-            confirmButton.classList.add('btn-primary');
-            confirmButton.textContent = options.confirmText;
-            confirmButton.addEventListener('click', () => {
-                this.#handleConfirm(modalId, options);
-            });
-            buttonContainer.appendChild(confirmButton);
-        }
+        return closeButton;
+    }
 
-        modalFooter.appendChild(buttonContainer);
+    #createConfirmButton(modalId, options) {
+        const confirmButton = document.createElement('button');
+        confirmButton.type = "button";
+        confirmButton.classList.add('btn-primary');
+        confirmButton.textContent = options.confirmText;
+        confirmButton.addEventListener('click', () => {
+            this.#handleConfirm(modalId, options);
+        });
 
-        return modalFooter;
+        return confirmButton;
     }
 
     #handleClose(modalId, options) {
