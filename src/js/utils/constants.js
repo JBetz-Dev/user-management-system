@@ -5,7 +5,7 @@ export const API_CONFIG = {
         LOGIN: "/users/login/",
         LOGOUT: "/users/logout/",
         CHANGE_PASSWORD: (userId) => `/users/${userId}/password/`,
-        CHANGE_EMAIL: (email) => `/users/${email}/email/`
+        CHANGE_EMAIL: (userId) => `/users/${userId}/email/`
     }
 };
 
