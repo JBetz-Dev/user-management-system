@@ -29,7 +29,13 @@ export const VALIDATION_RULES = {
         REGEX: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,50}$/
     },
     PASSWORD: {
-        REGEX: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,40}$/
+        REGEX: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,40}$/,
+        REQUIREMENTS: {
+            LENGTH: "Between 8 and 40 characters long",
+            CASE: "Contains at least one uppercase and one lowercase letter",
+            NUMBER: "Contains at least one number",
+            SPECIAL_CHARACTER: "Contains at least one special character"
+        }
     }
 }
 
