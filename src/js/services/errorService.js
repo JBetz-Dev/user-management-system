@@ -31,6 +31,10 @@ class ErrorService {
         }
     }
 
+    handleLogoutError(error) {
+        console.warn("Error logging out (local session cleared): " + error.message);
+    }
+
     handleRegistrationError(error) {
         switch (error.message) {
             case "username_already_exists":
