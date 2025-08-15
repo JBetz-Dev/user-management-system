@@ -1,4 +1,4 @@
-import { TOAST_CONFIG } from "../utils/constants.js";
+import {TOAST_CONFIG} from "../utils/constants.js";
 
 class ToastComponent {
     constructor() {

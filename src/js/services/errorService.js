@@ -1,6 +1,6 @@
-import {ERROR_MESSAGES, ROUTES} from "../utils/constants";
-import {Toast} from "../components/toast";
-import {Modal} from "../components/modal";
+import {ERROR_MESSAGES, ROUTES} from "../utils/constants.js";
+import {Toast} from "../components/toast.js";
+import {Modal} from "../components/modal.js";
 
 class ErrorService {
 

@@ -1,4 +1,4 @@
-import {SESSION_STORAGE_KEYS} from "../utils/constants";
+import {SESSION_STORAGE_KEYS} from "../utils/constants.js";
 
 class SessionService {
 
