@@ -73,7 +73,12 @@ class ModalComponent {
     #createModalBody(content) {
         const modalBody = document.createElement('div');
         modalBody.classList.add('modal-body');
-        modalBody.innerHTML = content;
+
+        if (typeof content === 'string') {
+            modalBody.innerHTML = content;
+        } else {
+            modalBody.appendChild(content);
+        }
 
         return modalBody;
     }
