@@ -1,7 +1,7 @@
 import {SUCCESS_MESSAGES} from "../../utils/constants.js";
-import {Validator} from "../../utils/validation.js";
-import {Modal} from "../modal.js";
-import {Toast} from "../toast.js";
+import {validator} from "../../utils/validation.js";
+import {modal} from "../modal.js";
+import {toast} from "../toast.js";
 import {sessionService} from "../../services/sessionService.js";
 import {errorService} from "../../services/errorService.js";
 import {userService} from "../../services/userService.js";
@@ -66,14 +66,14 @@ class ChangeEmailForm {
     }
 
     #validateEmailFormData(formData) {
-        return Validator.checkIfInputProvided('Password', formData.password) &&
-            Validator.validateInput('Email', formData.newEmail);
+        return validator.checkIfInputProvided('Password', formData.password) &&
+            validator.validateInput('Email', formData.newEmail);
     }
 
     #handleEmailChangeSuccess(userData) {
         sessionService.setActiveSession(userData);
-        Modal.closeAll();
-        Toast.show('success', 'Success!', SUCCESS_MESSAGES.EMAIL_CHANGE);
+        modal.closeAll();
+        toast.show('success', 'Success!', SUCCESS_MESSAGES.EMAIL_CHANGE);
         document.getElementById('profile-email').textContent = userData.email;
     }
 }

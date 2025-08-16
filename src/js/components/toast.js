@@ -1,6 +1,6 @@
 import {TOAST_CONFIG} from "../utils/constants.js";
 
-class ToastComponent {
+class Toast {
     constructor() {
         this.counter = 0;
         this.container = null;
@@ -146,4 +146,4 @@ class ToastComponent {
     }
 }
 
-export const Toast = new ToastComponent();
+export const toast = new Toast();

@@ -1,4 +1,4 @@
-class ModalComponent {
+class Modal {
 
     show(title, content, options = {}) {
         const modalId = options.id || "modal" + Date.now();
@@ -144,4 +144,4 @@ class ModalComponent {
     }
 }
 
-export const Modal = new ModalComponent();
+export const modal = new Modal();

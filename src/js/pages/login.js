@@ -1,6 +1,6 @@
 import {ROUTES, SUCCESS_MESSAGES} from "../utils/constants.js";
-import {Validator} from "../utils/validation.js"
-import {Toast} from "../components/toast.js";
+import {validator} from "../utils/validation.js"
+import {toast} from "../components/toast.js";
 import {userService} from "../services/userService.js";
 import {sessionService} from "../services/sessionService.js";
 import {errorService} from "../services/errorService.js";
@@ -30,11 +30,11 @@ function getLoginFormData() {
 }
 
 function validateLoginFormData(formData) {
-    return Validator.checkIfInputProvided('Username', formData.username) &&
-        Validator.checkIfInputProvided('Password', formData.password);
+    return validator.checkIfInputProvided('Username', formData.username) &&
+        validator.checkIfInputProvided('Password', formData.password);
 }
 
 function handleLoginSuccess(userData) {
     sessionService.setActiveSession(userData);
-    Toast.showSuccessAndRedirect(SUCCESS_MESSAGES.LOGIN, ROUTES.USER_AREA)
+    toast.showSuccessAndRedirect(SUCCESS_MESSAGES.LOGIN, ROUTES.USER_AREA)
 }

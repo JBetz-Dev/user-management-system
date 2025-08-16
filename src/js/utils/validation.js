@@ -1,7 +1,7 @@
 import {VALIDATION_RULES, ERROR_MESSAGES} from "./constants.js";
-import {Toast} from "../components/toast.js";
+import {toast} from "../components/toast.js";
 
-class ValidatorUtil {
+class Validator {
 
     validateInput(fieldName, fieldValue) {
         if (!this.checkIfInputProvided(fieldName, fieldValue)) {
@@ -27,7 +27,7 @@ class ValidatorUtil {
         }
 
         if (!validatorMethod(fieldValue)) {
-            Toast.show("error", `Invalid ${fieldName} Provided`, `${errorMessage}`);
+            toast.show("error", `Invalid ${fieldName} Provided`, `${errorMessage}`);
             return false;
         }
         return true;
@@ -35,7 +35,7 @@ class ValidatorUtil {
 
     checkIfInputProvided(fieldName, fieldValue) {
         if (!fieldValue.trim()) {
-            Toast.show("error",
+            toast.show("error",
                 `${fieldName} Required`,
                 ERROR_MESSAGES.INPUT.NO_VALUE_PROVIDED(fieldName)
             );
@@ -57,4 +57,4 @@ class ValidatorUtil {
     }
 }
 
-export const Validator = new ValidatorUtil();
+export const validator = new Validator();

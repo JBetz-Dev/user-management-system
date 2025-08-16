@@ -1,5 +1,5 @@
 import {ROUTES, SUCCESS_MESSAGES} from "../utils/constants.js";
-import {Toast} from "./toast.js";
+import {toast} from "./toast.js";
 import {userService} from "../services/userService.js";
 import {sessionService} from "../services/sessionService.js";
 import {errorService} from "../services/errorService.js";
@@ -43,7 +43,7 @@ class Navigation {
                     .catch(error => errorService.handleLogoutError(error))
                     .finally(() => {
                         sessionService.clearActiveSession();
-                        Toast.showSuccessAndRedirect(SUCCESS_MESSAGES.LOGOUT, ROUTES.HOME);
+                        toast.showSuccessAndRedirect(SUCCESS_MESSAGES.LOGOUT, ROUTES.HOME);
                     });
             });
 

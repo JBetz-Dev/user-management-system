@@ -1,6 +1,6 @@
 import {ROUTES, SUCCESS_MESSAGES} from "../utils/constants.js";
-import {Validator} from "../utils/validation.js"
-import {Toast} from "../components/toast.js";
+import {validator} from "../utils/validation.js"
+import {toast} from "../components/toast.js";
 import {userService} from "../services/userService.js";
 import {sessionService} from "../services/sessionService.js";
 import {errorService} from "../services/errorService.js";
@@ -33,16 +33,16 @@ function getRegistrationFormData() {
         username: document.getElementById('sign-up-username').value,
         email: document.getElementById('sign-up-email').value,
         password: document.getElementById('sign-up-password').value
-    }
+    };
 }
 
 function validateRegistrationFormData(formData) {
-    return Validator.validateInput('Username', formData.username) &&
-        Validator.validateInput('Email', formData.email) &&
-        Validator.validateInput('Password', formData.password)
+    return validator.validateInput('Username', formData.username) &&
+        validator.validateInput('Email', formData.email) &&
+        validator.validateInput('Password', formData.password);
 }
 
 function handleRegisterSuccess(userData) {
     sessionService.setActiveSession(userData);
-    Toast.showSuccessAndRedirect(SUCCESS_MESSAGES.REGISTRATION, ROUTES.USER_AREA)
+    toast.showSuccessAndRedirect(SUCCESS_MESSAGES.REGISTRATION, ROUTES.USER_AREA);
 }

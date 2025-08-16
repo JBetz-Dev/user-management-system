@@ -1,4 +1,4 @@
-import {Modal} from "../components/Modal.js";
+import {modal} from "../components/modal.js";
 import {userService} from "../services/userService.js";
 import {errorService} from "../services/errorService.js";
 
@@ -22,7 +22,7 @@ function createUsersList(users) {
         usersList.appendChild(userItem);
     });
 
-    Modal.show("Users List", usersList);
+    modal.show("Users List", usersList);
 }
 
 function createUserItem(user) {

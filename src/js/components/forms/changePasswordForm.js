@@ -1,9 +1,9 @@
 import {ERROR_MESSAGES, ROUTES, SUCCESS_MESSAGES} from "../../utils/constants.js";
 import {createFormGroup, createFormSubmitButton} from "./formElements.js";
 import {passwordRequirementsToggler} from "../passwordRequirementsToggler.js";
-import {Validator} from "../../utils/validation.js";
-import {Toast} from "../toast.js";
-import {Modal} from "../modal.js";
+import {validator} from "../../utils/validation.js";
+import {toast} from "../toast.js";
+import {modal} from "../modal.js";
 import {userService} from "../../services/userService.js";
 import {sessionService} from "../../services/sessionService.js";
 import {errorService} from "../../services/errorService.js";
@@ -75,18 +75,18 @@ class ChangePasswordForm {
 
     #validatePasswordFormData(formData) {
         if (formData.newPassword === formData.currentPassword) {
-            Toast.show("error", "Passwords Must Be Different", ERROR_MESSAGES.VALIDATION.PASSWORD_SAME_AS_CURRENT);
+            toast.show("error", "Passwords Must Be Different", ERROR_MESSAGES.VALIDATION.PASSWORD_SAME_AS_CURRENT);
             return false;
         }
 
-        return Validator.checkIfInputProvided('Password', formData.currentPassword) &&
-            Validator.validateInput('Password', formData.newPassword)
+        return validator.checkIfInputProvided('Password', formData.currentPassword) &&
+            validator.validateInput('Password', formData.newPassword);
     }
 
     #handlePasswordChangeSuccess(userData) {
         sessionService.clearActiveSession(userData);
-        Modal.closeAll();
-        Toast.showSuccessAndRedirect(SUCCESS_MESSAGES.PASSWORD_CHANGE, ROUTES.LOGIN)
+        modal.closeAll();
+        toast.showSuccessAndRedirect(SUCCESS_MESSAGES.PASSWORD_CHANGE, ROUTES.LOGIN);
     }
 }
 
