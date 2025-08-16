@@ -47,35 +47,9 @@
                 <label for="sign-up-email">Email</label>
                 <input type="email" id="sign-up-email" class="form-input" placeholder="Enter your email">
             </div>
-            <div class="form-group">
+            <div id="password-form-group" class="form-group">
                 <label for="sign-up-password">Password</label>
                 <input type="password" id="sign-up-password" class="form-input" placeholder="Create a password">
-                <div class="password-requirements">
-                    <div class="requirements-toggle" id="password-requirements-toggle">
-                        <span class="requirements-toggle-text">Password requirements</span>
-                        <i class="fas fa-chevron-down requirements-icon" id="requirements-icon"></i>
-                    </div>
-                    <div class="requirements-content" id="requirements-content">
-                        <ul class="requirements-list">
-                            <li class="requirements-item">
-                                <i class="fas fa-circle requirements-item-icon"></i>
-                                <span>Between 8 and 40 characters long</span>
-                            </li>
-                            <li class="requirements-item">
-                                <i class="fas fa-circle requirements-item-icon"></i>
-                                <span>Contains at least one uppercase and one lowercase letter</span>
-                            </li>
-                            <li class="requirements-item">
-                                <i class="fas fa-circle requirements-item-icon"></i>
-                                <span>Contains at least one number</span>
-                            </li>
-                            <li class="requirements-item">
-                                <i class="fas fa-circle requirements-item-icon"></i>
-                                <span>Contains at least one special character</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
             </div>
             <button type="submit" class="form-btn">
                 <i class="fas fa-user-plus"></i> Sign Up
@@ -84,6 +58,6 @@
     </div>
 </section>
 
-<script src="/src/scripts.js"></script>
+<script type="module" src="/src/js/main.js"></script>
 </body>
 </html>
