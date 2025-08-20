@@ -5,7 +5,7 @@ public class UserHandler {
     private final HttpRequest request;
     private final HttpResponse response;
     private final UserService userService;
-    private SessionData sessionData;
+    private SessionData activeSession;
 
     public UserHandler(HttpRequest request) {
         this.request = request;
@@ -13,15 +13,14 @@ public class UserHandler {
         userService = new UserService();
     }
 
-    public UserHandler(HttpRequest request, SessionData sessionData) {
-        this.request = request;
-        response = new HttpResponse();
-        userService = new UserService();
-        this.sessionData = sessionData;
-    }
-
     public HttpResponse getResponse() {
-        boolean hasActiveSession = sessionData != null && sessionData.isActive();
+        String cookie = request.getHeader("Cookie");
+
+        if (cookie != null) {
+            activeSession = SessionManager.getActiveSession(cookie);
+        }
+
+        boolean hasActiveSession = activeSession != null;
 
         response.setVersion("HTTP/1.1");
         response.setHeader("Content-Type", "application/json");
@@ -107,7 +106,7 @@ public class UserHandler {
     }
 
     private void handleLogoutUser() {
-        User savedUser = sessionData.user();
+        User savedUser = activeSession.user();
 
         if (savedUser != null) {
             SessionManager.invalidateUserSessions(savedUser);
@@ -144,7 +143,7 @@ public class UserHandler {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(
                     List.of("id", "currentPassword", "newPassword"));
-            User savedUser = sessionData.user();
+            User savedUser = activeSession.user();
             int userId = parseUserId(requestFields.get("id"));
             String currentPassword = requestFields.get("currentPassword");
             String newPassword = requestFields.get("newPassword");
@@ -177,7 +176,7 @@ public class UserHandler {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(
                     List.of("id", "newEmail", "password"));
-            User savedUser = sessionData.user();
+            User savedUser = activeSession.user();
             int userId = parseUserId(requestFields.get("id"));
             String newEmail = requestFields.get("newEmail");
             String password = requestFields.get("password");

@@ -6,22 +6,22 @@ import java.util.List;
 public class FileHandler {
     private final HttpRequest request;
     private final HttpResponse response;
-    private SessionData sessionData;
     private final List<String> restrictedPaths = List.of("user-area", "profile");
+    private SessionData activeSession;
 
     public FileHandler(HttpRequest request) {
         this.request = request;
         response = new HttpResponse();
     }
 
-    public FileHandler(HttpRequest request, SessionData sessionData) {
-        this.request = request;
-        response = new HttpResponse();
-        this.sessionData = sessionData;
-    }
-
     public HttpResponse getResponse() throws IOException {
-        boolean hasActiveSession = sessionData != null && sessionData.isActive();
+        String cookie = request.getHeader("Cookie");
+
+        if (cookie != null) {
+            activeSession = SessionManager.getActiveSession(cookie);
+        }
+
+        boolean hasActiveSession = activeSession != null;
 
         response.setVersion("HTTP/1.1");
         String pathString = request.getPath();
@@ -41,7 +41,6 @@ public class FileHandler {
     }
 
     private boolean isRestrictedPath(String path) {
-        // Add additional paths
         for (String restrictedPath : restrictedPaths) {
             if (path.contains(restrictedPath)) {
                 return true;
