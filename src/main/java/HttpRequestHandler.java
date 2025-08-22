@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -9,7 +8,7 @@ import java.time.format.DateTimeFormatter;
  * Routes incoming HTTP requests to appropriate handlers based on URL path patterns.
  *
  * Responsibilities:
- * - Route requests to UserHandler or FileHandler based on path
+ * - Route requests to UserHandler or FileRequestHandler based on path
  * - Generate error responses for failed requests
  * - Finalize HTTP response headers (Content-Length, Date, Connection)
  * - Content-type negotiation for error responses
@@ -31,7 +30,7 @@ public class HttpRequestHandler {
         response = getHandlerResponse();
         int responseStatusCode = response.getStatusCode();
 
-        if (responseStatusCode >= 400 && (response.getBody() == null || response.getBody().isEmpty())) {
+        if (responseStatusCode >= 400 && response.getBodyBytes().length == 0) {
             response = errorHandler.generateErrorResponse(responseStatusCode, getRequestContentType());
         }
 
@@ -46,7 +45,7 @@ public class HttpRequestHandler {
             response = new UserHandler(request).getResponse();
         } else {
             try {
-                response = new FileHandler(request).getResponse();
+                response = new FileRequestHandler(request).getResponse();
             } catch (IOException e) {
                 response.setStatusCode(500);
             }
@@ -68,7 +67,8 @@ public class HttpRequestHandler {
     }
 
     private void finalizeResponseHeaders() {
-        int responseBodyLength = response.getBody().getBytes(StandardCharsets.UTF_8).length;
+        int responseBodyLength = response.getBodyBytes().length;
+
         response.setHeader("Content-Length", String.valueOf(responseBodyLength));
         response.setHeader("Date", getHttpDateTime());
         response.setHeader("Connection", "close");

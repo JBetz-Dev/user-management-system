@@ -50,7 +50,7 @@ public class HttpServer {
 
     private static void writeResponse(Socket socket, HttpResponse response) throws IOException {
         try (OutputStream outputStream = socket.getOutputStream()) {
-            outputStream.write(response.toString().getBytes());
+            outputStream.write(response.getResponseBytes());
             outputStream.flush();
         }
     }

@@ -1,19 +1,33 @@
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents an HTTP response with status, headers, and body.
+ * Provides unified byte-based body handling for all content types.
+ *
+ * Responsibilities:
+ * - Store response data (status, headers, body)
+ * - Generate properly formatted HTTP response bytes
+ * - Handle both text and binary content uniformly
+ *
+ * Design decisions:
+ * - Body stored as byte[] to support binary content (images, files, etc.)
+ * - Convenience methods for text body manipulation
+ */
 public class HttpResponse {
     private String version;
     private int statusCode;
     private String reasonPhrase;
     private Map<String, String> headers;
-    private String body;
+    private byte[] body;
 
     public HttpResponse() {
         headers = new HashMap<>();
     }
 
     public String getVersion() {
-        return version;
+        return version != null ? version : "";
     }
 
     public int getStatusCode() {
@@ -21,7 +35,7 @@ public class HttpResponse {
     }
 
     public String getReasonPhrase() {
-        return reasonPhrase;
+        return reasonPhrase != null ? reasonPhrase : "";
     }
 
     public Map<String, String> getHeaders() {
@@ -30,10 +44,6 @@ public class HttpResponse {
 
     public String getHeader(String key) {
         return headers.get(key);
-    }
-
-    public String getBody() {
-        return body;
     }
 
     public void setVersion(String version) {
@@ -57,10 +67,25 @@ public class HttpResponse {
     }
 
     public void setBody(String body) {
+        this.body = body.getBytes(StandardCharsets.UTF_8);
+    }
+
+    public void setBody(byte[] body) {
         this.body = body;
     }
 
-    public String toString() {
+    public byte[] getResponseBytes() {
+        byte[] headerBytes = getHeaderBytes();
+        byte[] bodyBytes = getBodyBytes();
+        byte[] responseBytes = new byte[headerBytes.length + bodyBytes.length];
+
+        System.arraycopy(headerBytes, 0, responseBytes, 0, headerBytes.length);
+        System.arraycopy(bodyBytes, 0, responseBytes, headerBytes.length, bodyBytes.length);
+
+        return responseBytes;
+    }
+
+    public byte[] getHeaderBytes() {
         StringBuilder sb = new StringBuilder();
 
         sb.append(version).append(" ")
@@ -70,9 +95,12 @@ public class HttpResponse {
                 .append(": ")
                 .append(v)
                 .append("\n"));
-        sb.append("\n")
-                .append(body);
+        sb.append("\n");
 
-        return sb.toString();
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    public byte[] getBodyBytes() {
+        return body != null ? body : new  byte[0];
     }
 }

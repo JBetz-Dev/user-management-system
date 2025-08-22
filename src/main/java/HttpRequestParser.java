@@ -9,19 +9,19 @@ import java.util.regex.Pattern;
 /**
  * Parses raw HTTP requests from input streams into structured HttpRequest objects.
  * Implements strict HTTP/1.1 protocol parsing with comprehensive validation.
- *
+ * <p>
  * Responsibilities:
  * - Parse HTTP request line (method, path, version)
  * - Extract and validate HTTP headers
  * - Read request body based on Content-Length header
  * - Validate all components against HTTP specifications
- *
+ * <p>
  * Design decisions:
  * - Strict validation: malformed requests result in HttpParsingException
  * - Memory protection: enforces 10MB body size limit
  * - Line-by-line header parsing (folded headers not supported)
  * - Content-Length required for requests with bodies
- *
+ * <p>
  * Security considerations:
  * - Bounds checking on Content-Length to prevent memory exhaustion
  * - Input validation on all HTTP components
@@ -137,12 +137,15 @@ public class HttpRequestParser {
         String contentLengthHeader = request.getHeader("Content-Length");
 
         if (contentLengthHeader == null || contentLengthHeader.trim().isEmpty()) {
-            request.setBody("");
             return;
         }
 
         try {
             int contentLength = Integer.parseInt(contentLengthHeader);
+
+            if (contentLength == 0) {
+                return;
+            }
 
             if (contentLength < 0) {
                 throw new HttpParsingException("Negative Content-Length header: " + contentLength);
@@ -153,10 +156,10 @@ public class HttpRequestParser {
             }
 
             char[] bodyChars = new char[contentLength];
-            int bytesRead = reader.read(bodyChars, 0, contentLength);
-            request.setBody(new String(bodyChars, 0, bytesRead));
+            int charsRead = reader.read(bodyChars, 0, contentLength);
+            request.setBody(new String(bodyChars, 0, charsRead));
         } catch (NumberFormatException e) {
-            throw new HttpParsingException("Invalid Content-Length header: " +  contentLengthHeader);
+            throw new HttpParsingException("Invalid Content-Length header: " + contentLengthHeader);
         } catch (OutOfMemoryError e) {
             throw new HttpParsingException("Unable to allocate memory for request body");
         }
