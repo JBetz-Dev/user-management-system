@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -6,18 +5,16 @@ import java.time.format.DateTimeFormatter;
 /**
  * Central HTTP request router that coordinates request processing and response generation.
  * Routes incoming HTTP requests to appropriate handlers based on URL path patterns.
- *
+ * <p>
  * Responsibilities:
- * - Route requests to UserHandler or FileRequestHandler based on path
- * - Generate error responses for failed requests
+ * - Route requests to UserRequestHandler or FileRequestHandler based on path
  * - Finalize HTTP response headers (Content-Length, Date, Connection)
- * - Content-type negotiation for error responses
- *
- * Design decision: Pure routing logic - no business logic or I/O concerns.
- * Session management is delegated to individual handlers for better separation of concerns.
+ * <p>
+ * Design decision: Pure routing and infrastructure concerns only.
+ * Business logic, error handling, session management, and response generation delegated to specific handlers.
+ * Each handler owns complete response construction including domain-specific error handling.
  */
 public class HttpRequestHandler {
-    private final HttpErrorHandler errorHandler = new HttpErrorHandler();
     private final HttpRequest request;
     private HttpResponse response;
 
@@ -26,44 +23,17 @@ public class HttpRequestHandler {
         response = new HttpResponse();
     }
 
-    public HttpResponse getResponse() throws IOException {
-        response = getHandlerResponse();
-        int responseStatusCode = response.getStatusCode();
+    public HttpResponse getResponse() {
+        String path = request.getPath();
 
-        if (responseStatusCode >= 400 && response.getBodyBytes().length == 0) {
-            response = errorHandler.generateErrorResponse(responseStatusCode, getRequestContentType());
+        if (path.contains("/users")) {
+            response = new UserRequestHandler(request).getResponse();
+        } else {
+            response = new FileRequestHandler(request).getResponse();
         }
 
         finalizeResponseHeaders();
         return response;
-    }
-
-    private HttpResponse getHandlerResponse() {
-        String path = request.getPath();
-
-        if (path.contains("/users")) {
-            response = new UserHandler(request).getResponse();
-        } else {
-            try {
-                response = new FileRequestHandler(request).getResponse();
-            } catch (IOException e) {
-                response.setStatusCode(500);
-            }
-        }
-
-        return response;
-    }
-
-    private String getRequestContentType() {
-        String contentType = "";
-
-        if (request.getHeader("Content-Type") != null) {
-            contentType = request.getHeader("Content-Type");
-        } else if (request.getHeader("Accept") != null) {
-            contentType = request.getHeader("Accept");
-        }
-
-        return contentType;
     }
 
     private void finalizeResponseHeaders() {

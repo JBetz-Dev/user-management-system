@@ -1,15 +1,32 @@
 import java.util.List;
 import java.util.Map;
 
-public class UserHandler {
+/**
+ * Handles HTTP requests for user management operations including authentication,
+ * registration, and profile updates. Provides RESTful JSON API endpoints.
+ * <p>
+ * Responsibilities:
+ * - Route user-specific requests to appropriate business logic handlers
+ * - Coordinate with UserService for domain operations
+ * - Manage user session creation and validation
+ * - Generate JSON responses with appropriate HTTP status codes
+ * - Handle request validation and field parsing
+ * <p>
+ * Design decisions:
+ * - Uses HttpResponseBuilder for consistent response construction
+ * - Self-contained error handling with JSON responses appropriate for API clients
+ * - Session management integrated with response cookie handling
+ * - Path-based routing using segment analysis for RESTful endpoint matching
+ */
+public class UserRequestHandler {
     private final HttpRequest request;
-    private final HttpResponse response;
+    private final HttpResponseBuilder responseBuilder;
     private final UserService userService;
     private SessionData activeSession;
 
-    public UserHandler(HttpRequest request) {
+    public UserRequestHandler(HttpRequest request) {
         this.request = request;
-        response = new HttpResponse();
+        responseBuilder = new HttpResponseBuilder();
         userService = new UserService();
     }
 
@@ -22,9 +39,6 @@ public class UserHandler {
 
         boolean hasActiveSession = activeSession != null;
 
-        response.setVersion("HTTP/1.1");
-        response.setHeader("Content-Type", "application/json");
-
         String method = request.getMethod();
         String pathString = request.getPath();
 
@@ -35,39 +49,37 @@ public class UserHandler {
         String[] segments = pathString.split("/");
         int segmentsLength = segments.length;
 
-        // Add additional endpoints
+        // Endpoints
         if (segmentsLength == 2 && method.equals("GET")) {
             if (hasActiveSession) {
-                handleGetAllUsers();
+                return handleGetAllUsers();
             } else {
-                prepareSessionNotFoundResponse();
+                return getErrorResponse("session_not_found");
             }
         } else if (segmentsLength == 2 && method.equals("POST")) {
-            handleRegisterNewUser();
+            return handleRegisterNewUser();
         } else if (segmentsLength == 3 && segments[2].equals("login") && method.equals("POST")) {
-            handleAuthenticateUser();
+            return handleAuthenticateUser();
         } else if (segmentsLength == 3 && segments[2].equals("logout") && method.equals("POST")) {
-            handleLogoutUser();
+            return handleLogoutUser();
         } else if (segmentsLength == 4 && segments[3].equals("password") && method.equals("PATCH")) {
             if (hasActiveSession) {
-                handleChangePassword();
+                return handleChangePassword();
             } else {
-                prepareSessionNotFoundResponse();
+                return getErrorResponse("session_not_found");
             }
         } else if (segmentsLength == 4 && segments[3].equals("email") && method.equals("PATCH")) {
             if (hasActiveSession) {
-                handleChangeEmail();
+                return handleChangeEmail();
             } else {
-                prepareSessionNotFoundResponse();
+                return getErrorResponse("session_not_found");
             }
         } else {
-            preparePathNotFoundResponse();
+            return getErrorResponse("path_not_found");
         }
-
-        return response;
     }
 
-    private void handleGetAllUsers() {
+    private HttpResponse handleGetAllUsers() {
         List<User> users = userService.getAllUsers();
         StringBuilder sb = new StringBuilder();
 
@@ -82,10 +94,10 @@ public class UserHandler {
         }
         sb.append("]");
 
-        prepareSuccessfulResponse(200, "OK", sb.toString());
+        return getSuccessfulResponse(200, sb.toString());
     }
 
-    private void handleAuthenticateUser() {
+    private HttpResponse handleAuthenticateUser() {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(List.of("username", "password"));
             String username = requestFields.get("username");
@@ -93,30 +105,29 @@ public class UserHandler {
             User savedUser = userService.getUserByUsername(username);
 
             if (savedUser == null) {
-                prepareUsernameNotFoundResponse();
+                return getErrorResponse("username_not_found");
             } else if (savedUser.verifyPassword(password)) {
                 setActiveSessionWithCookie(savedUser);
-                prepareSuccessfulResponse(200, "OK", savedUser.toJson());
+                return getSuccessfulResponse(200, savedUser.toJson());
             } else {
-                prepareInvalidPasswordResponse();
+                return getErrorResponse("invalid_password");
             }
         } catch (InvalidRequestFieldException e) {
-            prepareInvalidInputResponse();
+            return getErrorResponse("invalid_input");
         }
     }
 
-    private void handleLogoutUser() {
+    private HttpResponse handleLogoutUser() {
         User savedUser = activeSession.user();
 
         if (savedUser != null) {
             SessionManager.invalidateUserSessions(savedUser);
         }
 
-        prepareSuccessfulResponse(200, "OK",
-                "{\"message\": \"Logged out successfully\"}");
+        return getSuccessfulResponse(200,"{\"message\": \"Logged out successfully\"}");
     }
 
-    private void handleRegisterNewUser() {
+    private HttpResponse handleRegisterNewUser() {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(
                     List.of("username", "email", "password"));
@@ -129,17 +140,17 @@ public class UserHandler {
 
             if (registeredUser != null) {
                 setActiveSessionWithCookie(registeredUser);
-                prepareSuccessfulResponse(201, "Created", registeredUser.toJson());
+                return getSuccessfulResponse(201, registeredUser.toJson());
             } else {
-                prepareUsernameAlreadyExistsResponse();
+                return getErrorResponse("username_already_exists");
             }
         } catch (InvalidRequestFieldException e) {
-            prepareInvalidInputResponse();
+            return getErrorResponse("invalid_input");
         }
 
     }
 
-    private void handleChangePassword() {
+    private HttpResponse handleChangePassword() {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(
                     List.of("id", "currentPassword", "newPassword"));
@@ -149,13 +160,11 @@ public class UserHandler {
             String newPassword = requestFields.get("newPassword");
 
             if (savedUser == null) {
-                prepareSessionNotFoundResponse();
-                return;
+                return getErrorResponse("session_not_found");
             }
 
             if (savedUser.getId() != userId) {
-                prepareSessionUserMismatchResponse();
-                return;
+                return getErrorResponse("session_user_mismatch");
             }
 
             boolean passwordUpdated = userService.changePassword(savedUser, currentPassword, newPassword);
@@ -163,16 +172,16 @@ public class UserHandler {
             if (passwordUpdated) {
                 SessionManager.invalidateUserSessions(savedUser);
                 setActiveSessionWithCookie(savedUser);
-                prepareSuccessfulResponse(200, "OK", savedUser.toJson());
+                return getSuccessfulResponse(200, savedUser.toJson());
             } else {
-                prepareInvalidPasswordResponse();
+                return getErrorResponse("invalid_password");
             }
         } catch (InvalidRequestFieldException e) {
-            prepareInvalidInputResponse();
+            return getErrorResponse("invalid_input");
         }
     }
 
-    private void handleChangeEmail() {
+    private HttpResponse handleChangeEmail() {
         try {
             Map<String, String> requestFields = getExpectedRequestBodyFields(
                     List.of("id", "newEmail", "password"));
@@ -182,86 +191,94 @@ public class UserHandler {
             String password = requestFields.get("password");
 
             if (savedUser == null) {
-                prepareSessionNotFoundResponse();
+                return getErrorResponse("session_not_found");
             }
 
             if (savedUser.getId() != userId) {
-                prepareSessionUserMismatchResponse();
-                return;
+                return getErrorResponse("session_user_mismatch");
             }
 
             boolean emailUpdated = userService.changeEmail(savedUser, newEmail, password);
 
             if (emailUpdated) {
                 setActiveSessionWithCookie(savedUser);
-                prepareSuccessfulResponse(200, "OK", savedUser.toJson());
+                return getSuccessfulResponse(200, savedUser.toJson());
             } else {
-                prepareInvalidPasswordResponse();
+                return getErrorResponse("invalid_password");
             }
         } catch (InvalidRequestFieldException e) {
-            prepareInvalidInputResponse();
+            return getErrorResponse("invalid_input");
         }
-    }
-
-    private void prepareSuccessfulResponse(int statusCode, String reasonPhrase, String responseBody) {
-        response.setStatusCode(statusCode);
-        response.setReasonPhrase(reasonPhrase);
-        response.setBody(responseBody);
     }
 
     private void setActiveSessionWithCookie(User user) {
         String sessionId = SessionManager.setActiveSession(user);
         String cookieString = "sessionId=" + sessionId + "; Path=/; Max-Age=3600";
-        response.setHeader("Set-Cookie", cookieString);
+        responseBuilder.header("Set-Cookie", cookieString);
     }
 
-    public void prepareSessionNotFoundResponse() {
-        response.setStatusCode(401);
-        response.setReasonPhrase("Unauthorized");
-        String errorJson = createErrorJson("session_not_found");
-        response.setBody(errorJson);
+    private HttpResponse getSuccessfulResponse(int statusCode, String responseBody) {
+        return responseBuilder.version("HTTP/1.1")
+                .status(statusCode)
+                .header("Content-Type", "application/json")
+                .body(responseBody)
+                .build();
     }
 
-    public void prepareSessionUserMismatchResponse() {
-        response.setStatusCode(403);
-        response.setReasonPhrase("Forbidden");
-        String errorJson = createErrorJson("session_user_mismatch");
-        response.setBody(errorJson);
-    }
+    private HttpResponse getErrorResponse(String error) {
+        int statusCode;
+        String message;
 
-    public void preparePathNotFoundResponse() {
-        response.setStatusCode(404);
-        response.setReasonPhrase("Not Found");
-        String errorJson = createErrorJson("path_not_found");
-        response.setBody(errorJson);
-    }
+        switch (error) {
+            case "session_not_found": {
+                statusCode = 401;
+                message = "No valid session found";
+                break;
+            }
+            case "session_user_mismatch": {
+                statusCode = 403;
+                message = "The provided user does not match the current session user";
+                break;
+            }
+            case "path_not_found": {
+                statusCode = 404;
+                message = "Requested path not found";
+                break;
+            }
+            case "username_not_found": {
+                statusCode = 404;
+                message = "Requested username not found";
+                break;
+            }
+            case "username_already_exists": {
+                statusCode = 409;
+                message = "Requested username already exists";
+                break;
+            }
+            case "invalid_input": {
+                statusCode = 400;
+                message = "Invalid input provided";
+                break;
+            }
+            case "invalid_password": {
+                statusCode = 401;
+                message = "Invalid password provided";
+                break;
+            }
+            default: {
+                statusCode = 500;
+                message = "Unknown error";
+                break;
+            }
+        }
 
-    public void prepareUsernameNotFoundResponse() {
-        response.setStatusCode(404);
-        response.setReasonPhrase("Not Found");
-        String errorJson = createErrorJson("username_not_found");
-        response.setBody(errorJson);
-    }
+        String responseBody = String.format("{\"error\": \"%s\", \"message\": \"%s\"}", error, message);
 
-    public void prepareUsernameAlreadyExistsResponse() {
-        response.setStatusCode(409);
-        response.setReasonPhrase("Conflict");
-        String errorJson = createErrorJson("username_already_exists");
-        response.setBody(errorJson);
-    }
-
-    public void prepareInvalidInputResponse() {
-        response.setStatusCode(400);
-        response.setReasonPhrase("Bad Request");
-        String errorJson = createErrorJson("invalid_input");
-        response.setBody(errorJson);
-    }
-
-    public void prepareInvalidPasswordResponse() {
-        response.setStatusCode(401);
-        response.setReasonPhrase("Unauthorized");
-        String errorJson = createErrorJson("invalid_password");
-        response.setBody(errorJson);
+        return responseBuilder.version("HTTP/1.1")
+                .status(statusCode)
+                .header("Content-Type", "application/json")
+                .body(responseBody)
+                .build();
     }
 
     private Map<String, String> getExpectedRequestBodyFields(List<String> expectedFields)
@@ -288,23 +305,6 @@ public class UserHandler {
         }
 
         return parsedUserId;
-    }
-
-    private String createErrorJson(String error) {
-        String message;
-
-        switch (error) {
-            case "session_not_found" -> message = "No valid session found";
-            case "session_user_mismatch" -> message = "The provided user does not match the current session user";
-            case "path_not_found" -> message = "Requested path not found";
-            case "username_not_found" -> message = "Requested username not found";
-            case "username_already_exists" -> message = "Requested username already exists";
-            case "invalid_input" -> message = "Invalid input provided";
-            case "invalid_password" -> message = "Invalid password provided";
-            default -> message = "Unknown error";
-        }
-
-        return String.format("{\"error\": \"%s\", \"message\": \"%s\"}", error, message);
     }
 
     private static class InvalidRequestFieldException extends Exception {

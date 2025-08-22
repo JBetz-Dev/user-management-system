@@ -6,30 +6,31 @@ import java.util.List;
 /**
  * Handles HTTP requests for static files and resources.
  * Supports both text files (HTML, CSS, JS) and binary files (images, videos).
- *
+ * <p>
  * Responsibilities:
  * - Serve static files from the filesystem
  * - Set appropriate Content-Type headers based on file type
- * - Enforce access restrictions for protected resources
- * - Handle session-based access control
- *
+ * - Enforce session-based access control for restricted paths
+ * - Generate HTML error responses for file-related failures
+ * <p>
  * Design decisions:
- * - Uses Files.readAllBytes() for universal file type support
+ * - Uses HttpResponseBuilder for consistent response construction
  * - Content-Type detection via Files.probeContentType()
- * - Session management for restricted path access
+ * - Session validation for restricted path access
+ * - Self-contained error handling with HTML responses appropriate for file requests
  */
 public class FileRequestHandler {
     private final HttpRequest request;
-    private final HttpResponse response;
+    private final HttpResponseBuilder responseBuilder;
     private final List<String> restrictedPaths = List.of("user-area", "profile");
     private SessionData activeSession;
 
     public FileRequestHandler(HttpRequest request) {
         this.request = request;
-        response = new HttpResponse();
+        responseBuilder = new HttpResponseBuilder();
     }
 
-    public HttpResponse getResponse() throws IOException {
+    public HttpResponse getResponse() {
         String cookie = request.getHeader("Cookie");
 
         if (cookie != null) {
@@ -38,17 +39,18 @@ public class FileRequestHandler {
 
         boolean hasActiveSession = activeSession != null;
 
-        response.setVersion("HTTP/1.1");
         String pathString = request.getPath();
         Path path = Path.of(pathString.equals("/") ? "src/index.html" : pathString.substring(1));
 
         if (isRestrictedPath(pathString) && !hasActiveSession) {
-            response.setStatusCode(401);
+            return generateErrorResponse(401);
         } else {
-            handleFileRequest(path);
+            try {
+                return handleFileRequest(path);
+            } catch (IOException e) {
+                return generateErrorResponse(500);
+            }
         }
-
-        return response;
     }
 
     private boolean isRestrictedPath(String path) {
@@ -60,21 +62,46 @@ public class FileRequestHandler {
         return false;
     }
 
-    private void handleFileRequest(Path path) throws IOException {
+    private HttpResponse handleFileRequest(Path path) throws IOException {
         if (Files.isReadable(path)) {
             String contentType = Files.probeContentType(path);
 
             if (contentType == null) {
-                response.setStatusCode(500);
+                return generateErrorResponse(500);
             } else {
                 byte[] responseBody = Files.readAllBytes(path);
-                response.setStatusCode(200);
-                response.setReasonPhrase("OK");
-                response.setHeader("Content-Type", contentType);
-                response.setBody(responseBody);
+                return responseBuilder.version("HTTP/1.1")
+                        .status(200)
+                        .header("Content-Type", contentType)
+                        .body(responseBody)
+                        .build();
             }
         } else {
-            response.setStatusCode(404);
+            return generateErrorResponse(404);
         }
+    }
+
+    private HttpResponse generateErrorResponse(int statusCode) {
+        return responseBuilder.version("HTTP/1.1")
+                .status(statusCode)
+                .header("Content-Type", "text/html")
+                .body(generateErrorHtml(statusCode))
+                .build();
+    }
+
+    private String generateErrorHtml(int statusCode) {
+        String reasonPhrase = HttpResponseBuilder.getReasonPhrase(statusCode);
+
+        return String.format("""
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>%1$d (%2$s)</title>
+                    </head>
+                    <body>
+                        <h1>%1$d Error: %2$s</h1>
+                    </body>
+                </html>""", statusCode, reasonPhrase);
     }
 }
