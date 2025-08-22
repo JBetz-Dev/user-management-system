@@ -1,7 +1,5 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -9,17 +7,19 @@ import java.util.regex.Pattern;
 /**
  * Parses raw HTTP requests from input streams into structured HttpRequest objects.
  * Implements strict HTTP/1.1 protocol parsing with comprehensive validation.
+ * Supports both text and binary request bodies without data corruption.
  * <p>
  * Responsibilities:
  * - Parse HTTP request line (method, path, version)
  * - Extract and validate HTTP headers
- * - Read request body based on Content-Length header
+ * - Read request body as byte array based on Content-Length header
  * - Validate all components against HTTP specifications
  * <p>
  * Design decisions:
+ * - Byte-by-byte header parsing to avoid BufferedReader InputStream consumption issues
+ * - Direct binary body reading to preserve data integrity
  * - Strict validation: malformed requests result in HttpParsingException
  * - Memory protection: enforces 10MB body size limit
- * - Line-by-line header parsing (folded headers not supported)
  * - Content-Length required for requests with bodies
  * <p>
  * Security considerations:
@@ -28,24 +28,54 @@ import java.util.regex.Pattern;
  * - No support for chunked encoding (simplified implementation)
  */
 public class HttpRequestParser {
-    private final InputStream inputStream;
     private final HttpRequest request;
-    private BufferedReader reader;
+    private final InputStream inputStream;
 
-    public HttpRequestParser(InputStream inputStream) {
+    public HttpRequestParser(InputStream inputStream) throws IOException {
         this.inputStream = inputStream;
         request = new HttpRequest();
     }
 
     public HttpRequest parseToHttpRequest() throws HttpParsingException, IOException {
-        this.reader = new BufferedReader(new InputStreamReader(inputStream));
-        parseRequestLine();
         parseHeaders();
         parseBody();
         return request;
     }
 
-    private void parseRequestLine() throws HttpParsingException, IOException {
+    private void parseHeaders() throws IOException, HttpParsingException {
+        String requestLineAndHeaders = parseHeadersToString();
+
+        try (BufferedReader reader = new BufferedReader(new StringReader(requestLineAndHeaders))) {
+            parseRequestLine(reader);
+            parseHeaders(reader);
+        }
+    }
+
+    private String parseHeadersToString() throws IOException {
+        ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream();
+        int currentByte;
+        int crlfCount = 0; // Tracks position in \r\n\r\n sequence
+
+        while ((currentByte = inputStream.read()) != -1) {
+            headerBuffer.write(currentByte);
+
+            if (currentByte == '\r') {
+                crlfCount = (crlfCount == 0 || crlfCount == 2) ? crlfCount + 1 : 0;
+            } else if (currentByte == '\n') {
+                crlfCount = (crlfCount == 1 || crlfCount == 3) ? crlfCount + 1 : 0;
+
+                if (crlfCount == 4) {
+                    break; // Found \r\n\r\n - end of headers
+                }
+            } else {
+                crlfCount = 0; // Reset on any other byte
+            }
+        }
+
+        return headerBuffer.toString(StandardCharsets.UTF_8);
+    }
+
+    private void parseRequestLine(BufferedReader reader) throws HttpParsingException, IOException {
         String line = reader.readLine();
 
         if (line == null || line.isEmpty()) {
@@ -105,7 +135,7 @@ public class HttpRequestParser {
         request.setVersion(version);
     }
 
-    private void parseHeaders() throws HttpParsingException, IOException {
+    private void parseHeaders(BufferedReader reader) throws HttpParsingException, IOException {
         Map<String, String> headers = request.getHeaders();
         String line;
 
@@ -148,20 +178,36 @@ public class HttpRequestParser {
             }
 
             if (contentLength < 0) {
-                throw new HttpParsingException("Negative Content-Length header: " + contentLength);
+                throw new HttpParsingException("Negative Content-Length: " + contentLength);
             }
 
             if (contentLength > maxContentLength) {
                 throw new HttpParsingException("Content-Length exceeds 10MB: " + contentLength);
             }
 
-            char[] bodyChars = new char[contentLength];
-            int charsRead = reader.read(bodyChars, 0, contentLength);
-            request.setBody(new String(bodyChars, 0, charsRead));
+            byte[] bodyBytes = parseBodyToByteArray(contentLength);
+            request.setBody(bodyBytes);
         } catch (NumberFormatException e) {
             throw new HttpParsingException("Invalid Content-Length header: " + contentLengthHeader);
         } catch (OutOfMemoryError e) {
             throw new HttpParsingException("Unable to allocate memory for request body");
         }
+    }
+
+    private byte[] parseBodyToByteArray(int contentLength) throws HttpParsingException, IOException {
+        byte[] bodyBytes = new byte[contentLength];
+        int totalBytesRead = 0;
+
+        while (totalBytesRead < contentLength) {
+            int bytesRead =  inputStream.read(bodyBytes, totalBytesRead, contentLength - totalBytesRead);
+
+            if (bytesRead == -1) {
+                throw new  HttpParsingException("Unexpected end of stream while reading request body");
+            }
+
+            totalBytesRead += bytesRead;
+        }
+
+        return bodyBytes;
     }
 }
