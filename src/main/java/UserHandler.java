@@ -183,7 +183,6 @@ public class UserHandler {
 
             if (savedUser == null) {
                 prepareSessionNotFoundResponse();
-                return;
             }
 
             if (savedUser.getId() != userId) {
@@ -216,57 +215,53 @@ public class UserHandler {
         response.setHeader("Set-Cookie", cookieString);
     }
 
-    private void prepareSessionNotFoundResponse() {
+    public void prepareSessionNotFoundResponse() {
         response.setStatusCode(401);
         response.setReasonPhrase("Unauthorized");
-        String errorJson = createErrorJson("session_not_found", "No valid session found");
+        String errorJson = createErrorJson("session_not_found");
         response.setBody(errorJson);
     }
 
-    private void prepareSessionUserMismatchResponse() {
+    public void prepareSessionUserMismatchResponse() {
         response.setStatusCode(403);
         response.setReasonPhrase("Forbidden");
-        String errorJson = createErrorJson("session_user_mismatch", "The provided user does not match the current session user");
+        String errorJson = createErrorJson("session_user_mismatch");
         response.setBody(errorJson);
     }
 
-    private void preparePathNotFoundResponse() {
+    public void preparePathNotFoundResponse() {
         response.setStatusCode(404);
         response.setReasonPhrase("Not Found");
-        String errorJson = createErrorJson("path_not_found", "Requested path not found");
+        String errorJson = createErrorJson("path_not_found");
         response.setBody(errorJson);
     }
 
-    private void prepareUsernameNotFoundResponse() {
+    public void prepareUsernameNotFoundResponse() {
         response.setStatusCode(404);
         response.setReasonPhrase("Not Found");
-        String errorJson = createErrorJson("username_not_found", "Requested username not found");
+        String errorJson = createErrorJson("username_not_found");
         response.setBody(errorJson);
     }
 
-    private void prepareUsernameAlreadyExistsResponse() {
+    public void prepareUsernameAlreadyExistsResponse() {
         response.setStatusCode(409);
         response.setReasonPhrase("Conflict");
-        String errorJson = createErrorJson("username_already_exists", "Requested username already exists");
+        String errorJson = createErrorJson("username_already_exists");
         response.setBody(errorJson);
     }
 
-    private void prepareInvalidInputResponse() {
+    public void prepareInvalidInputResponse() {
         response.setStatusCode(400);
         response.setReasonPhrase("Bad Request");
-        String errorJson = createErrorJson("invalid_input", "Invalid input provided");
+        String errorJson = createErrorJson("invalid_input");
         response.setBody(errorJson);
     }
 
-    private void prepareInvalidPasswordResponse() {
+    public void prepareInvalidPasswordResponse() {
         response.setStatusCode(401);
         response.setReasonPhrase("Unauthorized");
-        String errorJson = createErrorJson("invalid_password", "Invalid password provided");
+        String errorJson = createErrorJson("invalid_password");
         response.setBody(errorJson);
-    }
-
-    private String createErrorJson(String error, String message) {
-        return String.format("{\"error\": \"%s\", \"message\": \"%s\"}", error, message);
     }
 
     private Map<String, String> getExpectedRequestBodyFields(List<String> expectedFields)
@@ -293,6 +288,23 @@ public class UserHandler {
         }
 
         return parsedUserId;
+    }
+
+    private String createErrorJson(String error) {
+        String message;
+
+        switch (error) {
+            case "session_not_found" -> message = "No valid session found";
+            case "session_user_mismatch" -> message = "The provided user does not match the current session user";
+            case "path_not_found" -> message = "Requested path not found";
+            case "username_not_found" -> message = "Requested username not found";
+            case "username_already_exists" -> message = "Requested username already exists";
+            case "invalid_input" -> message = "Invalid input provided";
+            case "invalid_password" -> message = "Invalid password provided";
+            default -> message = "Unknown error";
+        }
+
+        return String.format("{\"error\": \"%s\", \"message\": \"%s\"}", error, message);
     }
 
     private static class InvalidRequestFieldException extends Exception {
