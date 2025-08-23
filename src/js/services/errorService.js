@@ -18,8 +18,8 @@ class ErrorService {
 
     handleLoginError(error) {
         switch (error.message) {
-            case "username_not_found":
-            case "invalid_password":
+            case "user_not_found":
+            case "authentication_failed":
                 this.showLoginError();
                 break;
             case "invalid_input":
@@ -37,8 +37,7 @@ class ErrorService {
 
     handleRegistrationError(error) {
         switch (error.message) {
-            case "username_already_exists":
-            case "invalid_password":
+            case "user_already_exists":
                 this.showRegistrationError();
                 break;
             case "invalid_input":
@@ -56,7 +55,7 @@ class ErrorService {
             case "session_user_mismatch":
                 this.showSessionExpiredError();
                 break;
-            case "invalid_password":
+            case "authentication_failed":
                 this.showInvalidPasswordError();
                 break;
             case "invalid_input":
@@ -76,7 +75,7 @@ class ErrorService {
     }
 
     showRegistrationError() {
-        modal.show("Registration Failed", ERROR_MESSAGES.AUTH.USERNAME_ALREADY_EXISTS, {
+        modal.show("Registration Failed", ERROR_MESSAGES.VALIDATION.USERNAME_ALREADY_EXISTS, {
             confirmText: "Log In",
             onConfirm: () => window.location.href = ROUTES.LOGIN
         });

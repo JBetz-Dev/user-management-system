@@ -1,3 +1,22 @@
+/**
+ * Domain model representing a user entity with authentication and JSON serialization capabilities.
+ * <p>
+ * Provides two constructors for different creation contexts:
+ * - Protected constructor for new user registration (auto-hashes plaintext password)
+ * - Public constructor for database reconstruction (uses existing password hash)
+ * <p>
+ * Design decisions:
+ * - Mutable fields to support service layer updates (username, email, password)
+ * - Password hashing handled automatically in constructors and setters
+ * - Protected password hash access to prevent external hash manipulation
+ * - JSON serialization excludes sensitive password hash
+ * - Encapsulated password verification through utility class
+ * <p>
+ * Security considerations:
+ * - Password verification uses secure hashing comparison
+ * - Password hash never exposed in JSON output
+ * - Hash operations delegated to PasswordUtil for consistency
+ */
 public class User {
 
     private int id;
@@ -6,7 +25,7 @@ public class User {
     private String passwordHash;
 
     // Used for creating new Users prior to DB save
-    public User(String username, String email, String password) {
+    protected User(String username, String email, String password) {
         this.username = username;
         this.email = email;
         passwordHash = PasswordUtil.hashPassword(password);

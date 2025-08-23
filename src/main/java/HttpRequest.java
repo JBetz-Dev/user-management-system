@@ -1,27 +1,37 @@
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents an HTTP request with method, path, headers, and body.
+ * Stores body content as byte arrays to support both text and binary data.
+ *
+ * Design decisions:
+ * - Body stored as byte[] for universal content type support
+ * - Headers stored as String map for easy manipulation
+ * - Convenience methods provided for text body access
+ */
 public class HttpRequest {
     private String method;
     private String path;
     private String version;
     private Map<String, String> headers;
-    private String body;
+    private byte[] body;
 
     public HttpRequest() {
         headers = new HashMap<>();
     }
 
     public String getMethod() {
-        return method;
+        return method != null ? method : "";
     }
 
     public String getPath() {
-        return path;
+        return path != null ? path : "";
     }
 
     public String getVersion() {
-        return version;
+        return version != null ? version : "";
     }
 
     public Map<String, String> getHeaders() {
@@ -33,7 +43,7 @@ public class HttpRequest {
     }
 
     public String getBody() {
-        return body;
+        return new String(getBodyBytes(), StandardCharsets.UTF_8);
     }
 
     public void setMethod(String method) {
@@ -57,10 +67,25 @@ public class HttpRequest {
     }
 
     public void setBody(String body) {
+        this.body = body.getBytes(StandardCharsets.UTF_8);
+    }
+
+    public void setBody(byte[] body) {
         this.body = body;
     }
 
-    public String toString() {
+    public byte[] getRequestBytes() {
+        byte[] headerBytes = getHeaderBytes();
+        byte[] bodyBytes = getBodyBytes();
+        byte[] requestBytes = new byte[headerBytes.length + bodyBytes.length];
+
+        System.arraycopy(headerBytes, 0, requestBytes, 0, headerBytes.length);
+        System.arraycopy(bodyBytes, 0, requestBytes, headerBytes.length, bodyBytes.length);
+
+        return requestBytes;
+    }
+
+    public byte[] getHeaderBytes() {
         StringBuilder sb = new StringBuilder();
 
         sb.append(version).append(" ")
@@ -70,9 +95,12 @@ public class HttpRequest {
                 .append(": ")
                 .append(v)
                 .append("\n"));
-        sb.append("\n")
-                .append(body);
+        sb.append("\n");
 
-        return sb.toString();
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    public byte[] getBodyBytes() {
+        return body != null ? body : new byte[0];
     }
 }
