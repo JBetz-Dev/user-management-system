@@ -5,6 +5,21 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Manages user session data and lifecycle for HTTP-based authentication.
+ * Provides in-memory session storage with automatic cleanup and expiry management.
+ * <p>
+ * Sessions store minimal data (userId + expiry) to avoid cache coherence issues.
+ * All session operations are thread-safe using ConcurrentHashMap.
+ * <p>
+ * Design decisions:
+ * - Store only userId to eliminate stale user data problems
+ * - Automatic cleanup every 1000 operations to prevent memory leaks
+ * - UUID-based session IDs for security
+ * - 60-minute session timeout for balance of security and UX
+ *
+ * @see SessionData
+ */
 public class SessionManager {
     private static final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();
     private static long sessionCleanupCounter = 0;
@@ -40,12 +55,12 @@ public class SessionManager {
         return sessionData;
     }
 
-    protected static String setActiveSession(User user) {
+    protected static String setActiveSession(int userId) {
         String sessionId = UUID.randomUUID().toString();
         LocalDateTime currentDateTime = LocalDateTime.now();
         LocalDateTime expiryDateTime = currentDateTime.plusMinutes(60);
 
-        activeSessions.put(sessionId, new SessionData(user, expiryDateTime));
+        activeSessions.put(sessionId, new SessionData(userId, expiryDateTime));
 
         if (sessionCleanupCounter++ == 1000) {
             removeInactiveSessions();
@@ -54,9 +69,9 @@ public class SessionManager {
         return sessionId;
     }
 
-    protected static void invalidateUserSessions(User user) {
+    protected static void invalidateUserSessions(int userId) {
         activeSessions.entrySet().removeIf(
-                entry -> entry.getValue().user().getId() == user.getId()
+                entry -> entry.getValue().userId() == userId
         );
     }
 

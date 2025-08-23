@@ -60,7 +60,7 @@ export const SUCCESS_MESSAGES = {
 export const ERROR_MESSAGES = {
     VALIDATION: {
         INVALID_USERNAME: "Username must be between 4-25 characters - please try again",
-        USERNAME_ALREADY_EXISTS: "Username already exist - please log in or try a different username",
+        USERNAME_ALREADY_EXISTS: "Username already exists - please log in or try a different username",
         INVALID_EMAIL: "Invalid email provided - please try again",
         EMAIL_ALREADY_EXISTS: "Email already exists - please log in or try a different email",
         INVALID_PASSWORD: "Password does not meet the complexity requirements - please try again",
