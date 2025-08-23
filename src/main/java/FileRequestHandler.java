@@ -31,14 +31,7 @@ public class FileRequestHandler {
     }
 
     public HttpResponse getResponse() {
-        String cookie = request.getHeader("Cookie");
-
-        if (cookie != null) {
-            activeSession = SessionManager.getActiveSession(cookie);
-        }
-
-        boolean hasActiveSession = activeSession != null;
-
+        boolean hasActiveSession = setupSessionIfCookie();
         String pathString = request.getPath();
         Path path = Path.of(pathString.equals("/") ? "src/index.html" : pathString.substring(1));
 
@@ -51,6 +44,16 @@ public class FileRequestHandler {
                 return generateErrorResponse(500);
             }
         }
+    }
+
+    private boolean setupSessionIfCookie() {
+        String cookie = request.getHeader("Cookie");
+
+        if (cookie != null) {
+            activeSession = SessionManager.getActiveSession(cookie);
+        }
+
+        return activeSession != null;
     }
 
     private boolean isRestrictedPath(String path) {

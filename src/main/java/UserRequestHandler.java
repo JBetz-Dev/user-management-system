@@ -31,13 +31,7 @@ public class UserRequestHandler {
     }
 
     public HttpResponse getResponse() {
-        String cookie = request.getHeader("Cookie");
-
-        if (cookie != null) {
-            activeSession = SessionManager.getActiveSession(cookie);
-        }
-
-        boolean hasActiveSession = activeSession != null;
+        boolean hasActiveSession = setupSessionIfCookie();
 
         String method = request.getMethod();
         String pathString = request.getPath();
@@ -49,7 +43,6 @@ public class UserRequestHandler {
         String[] segments = pathString.split("/");
         int segmentsLength = segments.length;
 
-        // Endpoints
         if (segmentsLength == 2 && method.equals("GET")) {
             if (hasActiveSession) {
                 return handleGetAllUsers();
@@ -79,6 +72,16 @@ public class UserRequestHandler {
         }
     }
 
+    private boolean setupSessionIfCookie() {
+        String cookie = request.getHeader("Cookie");
+
+        if (cookie != null) {
+            activeSession = SessionManager.getActiveSession(cookie);
+        }
+
+        return activeSession != null;
+    }
+
     private HttpResponse handleGetAllUsers() {
         List<User> users = userService.getAllUsers();
         StringBuilder sb = new StringBuilder();
@@ -89,7 +92,6 @@ public class UserRequestHandler {
                 String userJson = user.toJson();
                 sb.append(userJson).append(",");
             }
-
             sb.deleteCharAt(sb.length() - 1);
         }
         sb.append("]");
