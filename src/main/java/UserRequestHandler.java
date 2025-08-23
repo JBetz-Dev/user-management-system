@@ -6,17 +6,18 @@ import java.util.Map;
  * registration, and profile updates. Provides RESTful JSON API endpoints.
  * <p>
  * Responsibilities:
- * - Route user-specific requests to appropriate business logic handlers
- * - Coordinate with UserService for domain operations
- * - Manage user session creation and validation
+ * - Coordinate with UserRouter for request routing and UserService for domain operations
+ * - Validate user sessions and enforce authentication requirements
  * - Generate JSON responses with appropriate HTTP status codes
  * - Handle request validation and field parsing
+ * - Manage user session creation and cookie handling
  * <p>
  * Design decisions:
+ * - Uses UserRouter for clean separation of routing logic from business logic
+ * - Session requirements determined by route metadata for consistent auth handling
  * - Uses HttpResponseBuilder for consistent response construction
  * - Self-contained error handling with JSON responses appropriate for API clients
  * - Session management integrated with response cookie handling
- * - Path-based routing using segment analysis for RESTful endpoint matching
  */
 public class UserRequestHandler {
     private final HttpRequest request;
@@ -32,44 +33,21 @@ public class UserRequestHandler {
 
     public HttpResponse getResponse() {
         boolean hasActiveSession = setupSessionIfCookie();
+        UserRoute route = new UserRouter().getRoute(request.getMethod(), request.getPath());
 
-        String method = request.getMethod();
-        String pathString = request.getPath();
-
-        if (pathString.endsWith("/")) {
-            pathString = pathString.substring(0, pathString.length() - 1);
+        if (route.requiresSession() && !hasActiveSession) {
+            return getErrorResponse("session_not_found");
         }
 
-        String[] segments = pathString.split("/");
-        int segmentsLength = segments.length;
-
-        if (segmentsLength == 2 && method.equals("GET")) {
-            if (hasActiveSession) {
-                return handleGetAllUsers();
-            } else {
-                return getErrorResponse("session_not_found");
-            }
-        } else if (segmentsLength == 2 && method.equals("POST")) {
-            return handleRegisterNewUser();
-        } else if (segmentsLength == 3 && segments[2].equals("login") && method.equals("POST")) {
-            return handleAuthenticateUser();
-        } else if (segmentsLength == 3 && segments[2].equals("logout") && method.equals("POST")) {
-            return handleLogoutUser();
-        } else if (segmentsLength == 4 && segments[3].equals("password") && method.equals("PATCH")) {
-            if (hasActiveSession) {
-                return handleChangePassword();
-            } else {
-                return getErrorResponse("session_not_found");
-            }
-        } else if (segmentsLength == 4 && segments[3].equals("email") && method.equals("PATCH")) {
-            if (hasActiveSession) {
-                return handleChangeEmail();
-            } else {
-                return getErrorResponse("session_not_found");
-            }
-        } else {
-            return getErrorResponse("path_not_found");
-        }
+        return switch (route) {
+            case LOGIN -> handleAuthenticateUser();
+            case LOGOUT -> handleLogoutUser();
+            case REGISTER -> handleRegisterNewUser();
+            case CHANGE_PASSWORD -> handleChangePassword();
+            case CHANGE_EMAIL -> handleChangeEmail();
+            case GET_ALL_USERS -> handleGetAllUsers();
+            default -> getErrorResponse("path_not_found");
+        };
     }
 
     private boolean setupSessionIfCookie() {
