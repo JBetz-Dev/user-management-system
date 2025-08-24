@@ -31,6 +31,10 @@ public class UserService {
         return userDAO.getUserByUsername(username);
     }
 
+    public User getUserByEmail(String email) throws SQLException {
+        return userDAO.getUserByEmail(email);
+    }
+
     public List<User> getAllUsers() throws SQLException {
         return userDAO.getAllUsers();
     }
@@ -40,12 +44,23 @@ public class UserService {
     }
 
     public User registerNewUser(String username, String email, String password)
-            throws SQLException, UserAlreadyExistsException {
-        if (userDAO.getUserByUsername(username) != null) {
-            throw new UserAlreadyExistsException("User already exists");
+            throws SQLException, UserAlreadyExistsException, EmailAlreadyExistsException {
+        String validatedUsername = UserValidationUtil.validateUsername(username);
+        String validatedEmail = UserValidationUtil.validateEmail(email);
+
+        if (getUserByUsername(validatedUsername) != null) {
+            throw new UserAlreadyExistsException("User already exists with the requested username");
         }
 
-        return userDAO.insertUser(new User(username, email, password));
+        if (getUserByEmail(validatedEmail) != null) {
+            throw new EmailAlreadyExistsException("User already exists with the requested email");
+        }
+
+        return userDAO.insertUser(new User(
+                validatedUsername,
+                validatedEmail,
+                UserValidationUtil.validatePassword(password))
+        );
     }
 
     public User authenticateUser(String username, String password)
@@ -60,18 +75,23 @@ public class UserService {
     }
 
     public User changeUsername(int userId, String username, String password)
-            throws SQLException, UserAuthenticationException {
+            throws SQLException, UserAuthenticationException, UserAlreadyExistsException {
+        String validatedUsername = UserValidationUtil.validateUsername(username);
         User user = getUserById(userId);
 
         if (user == null || !user.verifyPassword(password)) {
             throw new UserAuthenticationException("User authentication failed");
         }
 
-        if (!userDAO.updateUsername(userId, username)) {
+        if (getUserByUsername(validatedUsername) != null) {
+            throw new UserAlreadyExistsException("User already exists with the requested username");
+        }
+
+        if (!userDAO.updateUsername(userId, validatedUsername)) {
             throw new SQLException("Failed to update username");
         }
 
-        user.setUsername(username);
+        user.setUsername(validatedUsername);
         return user;
     }
 
@@ -83,7 +103,8 @@ public class UserService {
             throw new UserAuthenticationException("User authentication failed");
         }
 
-        String hashedPassword = PasswordUtil.hashPassword(newPassword);
+        String hashedPassword = PasswordUtil.hashPassword(
+                UserValidationUtil.validatePassword(newPassword));
 
         if (!userDAO.updatePassword(userId, hashedPassword)) {
             throw new SQLException("Failed to update password");
@@ -94,19 +115,30 @@ public class UserService {
     }
 
     public User changeEmail(int userId, String email, String password)
-            throws SQLException, UserAuthenticationException {
+            throws SQLException, UserAuthenticationException, EmailAlreadyExistsException {
+        String validatedEmail = UserValidationUtil.validateEmail(email);
         User user = getUserById(userId);
 
         if (user == null || !user.verifyPassword(password)) {
             throw new UserAuthenticationException("User authentication failed");
         }
 
-        if (!userDAO.updateEmail(userId, email)) {
+        if (getUserByEmail(validatedEmail) != null) {
+            throw new EmailAlreadyExistsException("User already exists with the requested email");
+        }
+
+        if (!userDAO.updateEmail(userId, validatedEmail)) {
             throw new SQLException("Failed to update email");
         }
 
-        user.setEmail(email);
+        user.setEmail(validatedEmail);
         return user;
+    }
+
+    public static class UserAuthenticationException extends Exception {
+        UserAuthenticationException(String message) {
+            super(message);
+        }
     }
 
     public static class UserAlreadyExistsException extends Exception {
@@ -115,8 +147,8 @@ public class UserService {
         }
     }
 
-    public static class UserAuthenticationException extends Exception {
-        UserAuthenticationException(String message) {
+    public static class EmailAlreadyExistsException extends Exception {
+        EmailAlreadyExistsException(String message) {
             super(message);
         }
     }

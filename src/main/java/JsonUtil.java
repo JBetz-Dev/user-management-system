@@ -1,7 +1,35 @@
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class for JSON parsing and validation operations.
+ * Provides simple JSON string parsing to field maps and validates required field presence.
+ * <p>
+ * This is a minimal JSON implementation focused on parsing simple key-value objects
+ * from HTTP request bodies. Not intended for complex nested JSON structures.
+ * <p>
+ * Design decisions:
+ * - Throws IllegalArgumentException for missing fields (unchecked for input validation)
+ * - Returns String-to-String maps for simple request body parsing
+ * - Handles quoted string values and basic JSON escaping
+ *
+ * @see UserRequestHandler
+ */
 public class JsonUtil {
+
+    public static Map<String, String> parseJsonWithRequiredFields(String requestBody, List<String> requiredFields) {
+        Map<String, String> providedFields = parseJsonToFieldMap(requestBody);
+
+        for (String requiredField : requiredFields) {
+            String providedField = providedFields.get(requiredField);
+            if (providedField == null || providedField.trim().isEmpty()) {
+                throw new IllegalArgumentException("Required field not found: " + requiredField);
+            }
+        }
+
+        return providedFields;
+    }
 
     public static Map<String, String> parseJsonToFieldMap(String json) {
         Map<String, String> fieldMap = new HashMap<>();

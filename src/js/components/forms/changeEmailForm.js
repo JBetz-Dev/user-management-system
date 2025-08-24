@@ -1,4 +1,4 @@
-import {SUCCESS_MESSAGES} from "../../utils/constants.js";
+import {ERROR_MESSAGES, SUCCESS_MESSAGES} from "../../utils/constants.js";
 import {validator} from "../../utils/validation.js";
 import {modal} from "../modal.js";
 import {toast} from "../toast.js";
@@ -44,11 +44,11 @@ class ChangeEmailForm {
         const userData = sessionService.getActiveSession();
 
         if (userData === null) {
-            errorService.showSessionExpiredError();
+            errorService.showSessionExpiredModal();
             return;
         }
 
-        if (this.#validateEmailFormData(formData)) {
+        if (this.#validateEmailFormData(formData, userData)) {
             userData.password = formData.password;
             userData.newEmail = formData.newEmail;
 
@@ -65,7 +65,13 @@ class ChangeEmailForm {
         };
     }
 
-    #validateEmailFormData(formData) {
+    #validateEmailFormData(formData, userData) {
+        if (formData.newEmail === userData.email) {
+            toast.show("error", "Email Must Be Different",
+                ERROR_MESSAGES.VALIDATION.SAME_AS_CURRENT("email"));
+            return false;
+        }
+
         return validator.checkIfInputProvided('Password', formData.password) &&
             validator.validateInput('Email', formData.newEmail);
     }
