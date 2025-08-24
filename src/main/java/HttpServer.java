@@ -43,7 +43,7 @@ public class HttpServer {
             HttpRequest request = new HttpRequestParser(inputStream).parseToHttpRequest();
             HttpResponse response = new HttpRequestHandler(request).getResponse();
 
-            outputStream.write(response.getResponseBytes());
+            outputStream.write(response.getBytes());
             outputStream.flush();
         } catch (IOException e) {
             System.err.println("Server Exception: " + e.getMessage());
