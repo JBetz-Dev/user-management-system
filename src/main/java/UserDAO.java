@@ -54,6 +54,20 @@ public class UserDAO {
         }
     }
 
+    public User getUserByEmail(String email) throws SQLException {
+        try (Connection conn = dbc.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE email = ?");
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                return null;
+            }
+
+            return mapResultSetToUser(rs);
+        }
+    }
+
     public List<User> getAllUsers() throws SQLException {
         try (Connection conn = dbc.getConnection()) {
             List<User> users = new ArrayList<>();

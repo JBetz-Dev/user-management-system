@@ -93,18 +93,20 @@ public class UserRequestHandler {
 
     private HttpResponse handleAuthenticateUser() {
         try {
-            Map<String, String> requestFields = getExpectedRequestBodyFields(List.of("username", "password"));
-            String username = requestFields.get("username");
-            String password = requestFields.get("password");
+            Map<String, String> requestFields = JsonUtil.parseJsonWithRequiredFields(
+                    request.getBody(), List.of("username", "password"));
 
-            User authenticatedUser = userService.authenticateUser(username, password);
+            User authenticatedUser = userService.authenticateUser(
+                    requestFields.get("username"),
+                    requestFields.get("password")
+            );
             setActiveSessionWithCookie(authenticatedUser.getId());
 
             return getSuccessfulResponse(200, authenticatedUser.toJson());
+        } catch (IllegalArgumentException e) {
+            return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAuthenticationException e) {
             return getErrorResponse(401, "authentication_failed");
-        } catch (InvalidRequestFieldException e) {
-            return getErrorResponse(400, "invalid_input");
         } catch (SQLException e) {
             return getErrorResponse(500, "database_error");
         }
@@ -120,20 +122,23 @@ public class UserRequestHandler {
 
     private HttpResponse handleRegisterNewUser() {
         try {
-            Map<String, String> requestFields = getExpectedRequestBodyFields(
-                    List.of("username", "email", "password"));
-            String username = requestFields.get("username");
-            String email = requestFields.get("email");
-            String password = requestFields.get("password");
+            Map<String, String> requestFields = JsonUtil.parseJsonWithRequiredFields(
+                    request.getBody(), List.of("username", "email", "password"));
 
-            User registeredUser = userService.registerNewUser(username, email, password);
+            User registeredUser = userService.registerNewUser(
+                    requestFields.get("username"),
+                    requestFields.get("email"),
+                    requestFields.get("password")
+            );
             setActiveSessionWithCookie(registeredUser.getId());
 
             return getSuccessfulResponse(201, registeredUser.toJson());
+        } catch (IllegalArgumentException e) {
+            return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAlreadyExistsException e) {
             return getErrorResponse(409, "user_already_exists");
-        } catch (InvalidRequestFieldException e) {
-            return getErrorResponse(400, "invalid_input");
+        } catch (UserService.EmailAlreadyExistsException e) {
+            return getErrorResponse(409, "email_already_exists");
         } catch (SQLException e) {
             return getErrorResponse(500, "database_error");
         }
@@ -145,26 +150,27 @@ public class UserRequestHandler {
         }
 
         try {
-            Map<String, String> requestFields = getExpectedRequestBodyFields(
-                    List.of("id", "currentPassword", "newPassword"));
-            int userId = parseUserId(requestFields.get("id"));
-            String currentPassword = requestFields.get("currentPassword");
-            String newPassword = requestFields.get("newPassword");
-            int sessionUserId = activeSession.userId();
+            Map<String, String> requestFields = JsonUtil.parseJsonWithRequiredFields(
+                    request.getBody(), List.of("id", "currentPassword", "newPassword"));
+            int userId = Integer.parseInt(requestFields.get("id"));
 
-            if (userId != sessionUserId) {
+            if (userId != activeSession.userId()) {
                 return getErrorResponse(403, "session_user_mismatch");
             }
 
-            User updatedUser = userService.changePassword(userId, currentPassword, newPassword);
+            User updatedUser = userService.changePassword(
+                    userId,
+                    requestFields.get("currentPassword"),
+                    requestFields.get("newPassword")
+            );
             SessionManager.invalidateUserSessions(userId);
             setActiveSessionWithCookie(userId);
 
             return getSuccessfulResponse(200, updatedUser.toJson());
+        } catch (IllegalArgumentException e) {
+            return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAuthenticationException e) {
             return getErrorResponse(401, "authentication_failed");
-        } catch (InvalidRequestFieldException e) {
-            return getErrorResponse(400, "invalid_input");
         } catch (SQLException e) {
             return getErrorResponse(500, "database_error");
         }
@@ -176,26 +182,29 @@ public class UserRequestHandler {
         }
 
         try {
-            Map<String, String> requestFields = getExpectedRequestBodyFields(
-                    List.of("id", "newEmail", "password"));
-            int userId = parseUserId(requestFields.get("id"));
-            String newEmail = requestFields.get("newEmail");
-            String password = requestFields.get("password");
-            int sessionUserId = activeSession.userId();
+            Map<String, String> requestFields = JsonUtil.parseJsonWithRequiredFields(
+                    request.getBody(), List.of("id", "newEmail", "password"));
+            int userId = Integer.parseInt(requestFields.get("id"));
 
-            if (userId != sessionUserId) {
+            if (userId != activeSession.userId()) {
                 return getErrorResponse(403, "session_user_mismatch");
             }
 
-            User updatedUser = userService.changeEmail(userId, newEmail, password);
+            User updatedUser = userService.changeEmail(
+                    userId,
+                    requestFields.get("newEmail"),
+                    requestFields.get("password")
+            );
             SessionManager.invalidateUserSessions(userId);
             setActiveSessionWithCookie(userId);
 
             return getSuccessfulResponse(200, updatedUser.toJson());
+        } catch (IllegalArgumentException e) {
+            return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAuthenticationException e) {
             return getErrorResponse(401, "authentication_failed");
-        } catch (InvalidRequestFieldException e) {
-            return getErrorResponse(400, "invalid_input");
+        } catch (UserService.EmailAlreadyExistsException e) {
+            return getErrorResponse(409, "email_already_exists");
         } catch (SQLException e) {
             return getErrorResponse(500, "database_error");
         }
@@ -236,37 +245,5 @@ public class UserRequestHandler {
                 .header("Content-Type", "application/json")
                 .body(responseBody)
                 .build();
-    }
-
-    private Map<String, String> getExpectedRequestBodyFields(List<String> expectedFields)
-            throws InvalidRequestFieldException {
-        Map<String, String> providedFields = JsonUtil.parseJsonToFieldMap(request.getBody());
-
-        for (String expectedField : expectedFields) {
-            String providedField = providedFields.get(expectedField);
-            if (providedField == null || providedField.trim().isEmpty()) {
-                throw new InvalidRequestFieldException("Expected field not found: " + expectedField);
-            }
-        }
-
-        return providedFields;
-    }
-
-    private int parseUserId(String userId) throws InvalidRequestFieldException {
-        int parsedUserId;
-
-        try {
-            parsedUserId = Integer.parseInt(userId);
-        } catch (NumberFormatException e) {
-            throw new InvalidRequestFieldException("Invalid user id: " + userId);
-        }
-
-        return parsedUserId;
-    }
-
-    private static class InvalidRequestFieldException extends Exception {
-        InvalidRequestFieldException(String message) {
-            super(message);
-        }
     }
 }

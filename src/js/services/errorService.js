@@ -4,29 +4,13 @@ import {modal} from "../components/modal.js";
 
 class ErrorService {
 
-    handleRequestError(error) {
-        switch (error.message) {
-            case "session_not_found":
-            case "session_user_mismatch":
-                this.showSessionExpiredError();
-                break;
-            default:
-                this.showGenericError();
-                break;
-        }
-    }
-
     handleLoginError(error) {
         switch (error.message) {
-            case "user_not_found":
             case "authentication_failed":
-                this.showLoginError();
-                break;
-            case "invalid_input":
-                this.showInvalidInputError();
+                this.showLoginFailedModal();
                 break;
             default:
-                this.showGenericError();
+                this.handleRequestError(error);
                 break;
         }
     }
@@ -38,65 +22,84 @@ class ErrorService {
     handleRegistrationError(error) {
         switch (error.message) {
             case "user_already_exists":
-                this.showRegistrationError();
+                this.showRegistrationFailedModal("username");
                 break;
-            case "invalid_input":
-                this.showInvalidInputError();
+            case "email_already_exists":
+                this.showRegistrationFailedModal("email");
                 break;
             default:
-                this.showGenericError();
+                this.handleRequestError(error);
                 break;
         }
     }
 
     handleProfileUpdateError(error) {
         switch (error.message) {
-            case "session_not_found":
-            case "session_user_mismatch":
-                this.showSessionExpiredError();
-                break;
             case "authentication_failed":
-                this.showInvalidPasswordError();
+                this.showAuthenticationFailedToast();
                 break;
-            case "invalid_input":
-                this.showInvalidInputError();
+            case "user_already_exists":
+                this.showProfileUpdateErrorToast("username");
+                break;
+            case "email_already_exists":
+                this.showProfileUpdateErrorToast("email");
                 break;
             default:
-                this.showGenericError();
+                this.handleRequestError(error);
                 break;
         }
     }
 
-    showLoginError() {
+    handleRequestError(error) {
+        switch (error.message) {
+            case "session_not_found":
+            case "session_user_mismatch":
+                this.showSessionExpiredModal();
+                break;
+            case "invalid_input":
+                this.showInvalidInputToast();
+                break;
+            default:
+                this.showGenericErrorToast();
+                break;
+        }
+    }
+
+    showLoginFailedModal() {
         modal.show("Login Failed", ERROR_MESSAGES.AUTH.LOGIN_FAILED, {
             confirmText: "Register",
             onConfirm: () => window.location.href = ROUTES.REGISTER
         });
     }
 
-    showRegistrationError() {
-        modal.show("Registration Failed", ERROR_MESSAGES.VALIDATION.USERNAME_ALREADY_EXISTS, {
+    showRegistrationFailedModal(fieldName) {
+        modal.show("Registration Failed", ERROR_MESSAGES.AUTH.ALREADY_EXISTS(fieldName), {
             confirmText: "Log In",
             onConfirm: () => window.location.href = ROUTES.LOGIN
         });
     }
 
-    showSessionExpiredError() {
+    showSessionExpiredModal() {
         modal.show("Session Expired", ERROR_MESSAGES.AUTH.SESSION_EXPIRED, {
             confirmText: "Log In",
             onConfirm: () => window.location.href = ROUTES.LOGIN
         });
     }
 
-    showInvalidPasswordError() {
-        toast.show("error", "Invalid Password", ERROR_MESSAGES.AUTH.INVALID_PASSWORD);
+    showAuthenticationFailedToast() {
+        toast.show("error", "Authentication Failed", ERROR_MESSAGES.AUTH.UNSUCCESSFUL);
     }
 
-    showInvalidInputError() {
+    showProfileUpdateErrorToast(fieldName) {
+        let field = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        toast.show("error", `${field} Already Exists`, ERROR_MESSAGES.AUTH.ALREADY_EXISTS(fieldName));
+    }
+
+    showInvalidInputToast() {
         toast.show("error", "Invalid Input", ERROR_MESSAGES.INPUT.INVALID);
     }
 
-    showGenericError() {
+    showGenericErrorToast() {
         toast.show("error", "Oops!", ERROR_MESSAGES.DEFAULT);
     }
 }

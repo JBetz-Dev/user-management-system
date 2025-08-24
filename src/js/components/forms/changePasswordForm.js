@@ -52,7 +52,7 @@ class ChangePasswordForm {
         const userData = sessionService.getActiveSession();
 
         if (userData.id === null) {
-            errorService.showSessionExpiredError();
+            errorService.showSessionExpiredModal();
             return;
         }
 
@@ -75,7 +75,8 @@ class ChangePasswordForm {
 
     #validatePasswordFormData(formData) {
         if (formData.newPassword === formData.currentPassword) {
-            toast.show("error", "Passwords Must Be Different", ERROR_MESSAGES.VALIDATION.PASSWORD_SAME_AS_CURRENT);
+            toast.show("error", "Passwords Must Be Different",
+                ERROR_MESSAGES.VALIDATION.SAME_AS_CURRENT("password"));
             return false;
         }
 

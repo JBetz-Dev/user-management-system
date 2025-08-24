@@ -60,16 +60,21 @@ export const SUCCESS_MESSAGES = {
 export const ERROR_MESSAGES = {
     VALIDATION: {
         INVALID_USERNAME: "Username must be between 4-25 characters - please try again",
-        USERNAME_ALREADY_EXISTS: "Username already exists - please log in or try a different username",
         INVALID_EMAIL: "Invalid email provided - please try again",
-        EMAIL_ALREADY_EXISTS: "Email already exists - please log in or try a different email",
         INVALID_PASSWORD: "Password does not meet the complexity requirements - please try again",
-        PASSWORD_SAME_AS_CURRENT: "Your new password must be different from your old password - please try again"
+        SAME_AS_CURRENT: (fieldName) => {
+            let field = fieldName.toLowerCase();
+            return `Your new ${field} must be different from your current ${field} - please try again`
+        }
     },
     AUTH: {
         LOGIN_FAILED: "Login unsuccessful - please try again or register as a new user",
-        INVALID_PASSWORD: "Invalid password - please try again",
-        SESSION_EXPIRED: "Your session has expired - please log in again to continue"
+        UNSUCCESSFUL: "Authentication unsuccessful - please try again",
+        SESSION_EXPIRED: "Your session has expired - please log in again to continue",
+        ALREADY_EXISTS: (fieldName) => {
+            let field = fieldName.toLowerCase();
+            return `The requested ${field} already exists - please try a different ${field}`
+        }
     },
     INPUT: {
         NO_VALUE_PROVIDED: (fieldName) => `You must enter a ${fieldName.toLowerCase()} - please try again`,
