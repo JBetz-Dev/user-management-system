@@ -5,17 +5,14 @@
  * - Protected constructor for new user registration (auto-hashes plaintext password)
  * - Public constructor for database reconstruction (uses existing password hash)
  * <p>
- * Design decisions:
- * - Mutable fields to support service layer updates (username, email, password)
- * - Password hashing handled automatically in constructors and setters
+ * Additional Considerations:
  * - Protected password hash access to prevent external hash manipulation
- * - JSON serialization excludes sensitive password hash
- * - Encapsulated password verification through utility class
- * <p>
- * Security considerations:
- * - Password verification uses secure hashing comparison
- * - Password hash never exposed in JSON output
- * - Hash operations delegated to PasswordUtil for consistency
+ * - Password hashing handled automatically in constructors and setters
+ * - Custom JSON serialization excludes sensitive password hash and provides control over output
+ *
+ * @see PasswordUtil
+ * @see UserService
+ * @see JsonUtil
  */
 public class User {
 

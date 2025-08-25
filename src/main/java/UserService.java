@@ -5,20 +5,17 @@ import java.util.List;
  * Service layer for user management operations containing business logic and validation.
  * Coordinates between UserRequestHandler and UserDAO while enforcing business rules.
  * <p>
+ * Service errors generate custom checked exceptions which must be handled by the calling method.
+ * <p>
  * Responsibilities:
  * - Validate business rules (authentication, authorization, uniqueness)
  * - Coordinate database operations through UserDAO
  * - Generate meaningful exceptions to indicate business error states
  * - Maintain data consistency by fetching fresh user data for operations
- * <p>
- * Design decisions:
- * - Always fetch fresh user data to avoid stale cache issues
- * - Use specific exceptions for different error types
- * - Let SQLException bubble up for infrastructure errors
- * - Return User objects for successful operations to support API responses
  *
  * @see UserDAO
  * @see UserRequestHandler
+ * @see UserValidationUtil
  */
 public class UserService {
     private final UserDAO userDAO = new UserDAO();

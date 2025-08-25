@@ -3,6 +3,7 @@ import java.util.Map;
 /**
  * Builder class for constructing HTTP responses with method chaining support.
  * Provides a clean API for setting HTTP status codes, headers, and response bodies.
+ * Implements HTTP/1.1 protocol specification for response formatting.
  * <p>
  * Responsibilities:
  * - Construct HttpResponse objects with builder interface
@@ -10,19 +11,11 @@ import java.util.Map;
  * - Support both string and binary response bodies
  * - Enable method chaining for readable response construction
  * <p>
- * Design decisions:
- * - Immutable builder pattern - each method returns 'this' for chaining
- * - Automatic reason phrase generation based on standard HTTP status codes
- * - Support for both individual headers and bulk header setting
- * - Encapsulates HttpResponse construction complexity behind simple API
- * <p>
- * Usage example:
- * HttpResponse response = new HttpResponseBuilder()
- *     .version("HTTP/1.1")
- *     .status(200)
- *     .header("Content-Type", "application/json")
- *     .body("{\"message\": \"success\"}")
- *     .build();
+ * Automatic reason phrase generation covers common HTTP status codes.
+ *
+ * @see HttpResponse
+ * @see UserRequestHandler
+ * @see FileRequestHandler
  */
 public class HttpResponseBuilder {
     private final HttpResponse response;

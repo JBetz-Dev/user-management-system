@@ -1,7 +1,22 @@
 import {VALIDATION_RULES} from "../utils/constants.js";
 import {createFormIcon} from "./forms/formElements.js";
 
+/**
+ * Password requirements display component with collapsible functionality.
+ * Shows password complexity requirements with toggle visibility.
+ *
+ * Responsibilities:
+ * - Display password validation requirements to users
+ * - Provide collapsible interface for space efficiency
+ * - Generate requirement list from validation constants
+ * - Handle expand/collapse animations and state
+ *
+ * @see {VALIDATION_RULES}
+ * @see {changePasswordForm}
+ * @see {formElements}
+ */
 class PasswordRequirementsToggler {
+
     build() {
         return this.#createPasswordRequirementsDiv();
     }

@@ -2,6 +2,20 @@ import {ERROR_MESSAGES, ROUTES} from "../utils/constants.js";
 import {toast} from "../components/toast.js";
 import {modal} from "../components/modal.js";
 
+/**
+ * Centralized error handling service for user-facing error management.
+ * Translates backend error responses into appropriate UI feedback.
+ *
+ * Responsibilities:
+ * - Handle authentication and registration error scenarios
+ * - Display contextual error messages and modals
+ * - Coordinate error recovery workflows (redirects, retries)
+ * - Provide consistent error user experience across the application
+ *
+ * @see {modal}
+ * @see {toast}
+ * @see {userService}
+ */
 class ErrorService {
 
     handleLoginError(error) {

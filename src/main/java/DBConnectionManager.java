@@ -3,6 +3,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Manages database connections using environment-based configuration.
+ * Loads connection parameters once at startup for performance optimization.
+ * <p>
+ * Responsibilities:
+ * - Load database configuration from environment variables
+ * - Provide new database connections on demand
+ * - Build PostgreSQL connection URLs from configuration components
+ *
+ * @see UserDAO
+ */
 public class DBConnectionManager {
     private static final String CONNECTION_URL;
     private static final String DB_USER;

@@ -1,5 +1,17 @@
 import {navigation} from "./components/navigation.js";
 
+/**
+ * Main application entry point handling page-specific script loading and navigation.
+ * Coordinates application initialization and page-specific functionality.
+ *
+ * Responsibilities:
+ * - Initialize navigation component for all pages
+ * - Dynamically load page-specific scripts based on current URL
+ * - Determine current page context from URL path
+ * - Coordinate application-wide component initialization
+ *
+ * @see {navigation}
+ */
 navigation.initialize();
 
 const currentPage = getCurrentPageName();

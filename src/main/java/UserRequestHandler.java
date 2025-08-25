@@ -5,29 +5,19 @@ import java.util.Map;
 /**
  * Handles HTTP requests for user management operations including authentication,
  * registration, and profile updates. Provides RESTful JSON API endpoints.
+ * Implements HTTP/1.1 protocol specification for API responses.
  * <p>
  * Responsibilities:
  * - Coordinate with UserRouter for request routing and UserService for domain operations
  * - Validate user sessions and enforce authentication requirements
- * - Transform business/database exceptions into appropriate HTTP status codes and error responses
+ * - Transform business exceptions into appropriate HTTP status codes and JSON error responses
  * - Handle request validation, field parsing, and JSON response formatting
  * - Manage user session lifecycle including creation, validation, and invalidation
- * <p>
- * Design decisions:
- * - Uses UserRouter for clean separation of routing logic from business logic
- * - Session requirements determined by route metadata for consistent auth handling
- * - Uses HttpResponseBuilder for consistent response construction
- * - Centralized error handling maps business/database exceptions to HTTP responses
- * - Session management integrated with response cookie handling
- * <p>
- * Session integration:
- * - Works with minimal SessionData (userId + expiry) to avoid stale data
- * - Session validation occurs before route execution for protected endpoints
- * - Session invalidation and renewal handled for security-sensitive operations
  *
  * @see UserRouter
  * @see UserService
  * @see SessionManager
+ * @see JsonUtil
  */
 public class UserRequestHandler {
     private final HttpRequest request;

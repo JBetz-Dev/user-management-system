@@ -2,6 +2,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Abstract base class representing common HTTP/1.1  message structure and behavior
+ * shared between requests and responses. Handles headers, body content, and
+ * byte-level message formatting.
+ * <p>
+ * Responsibilities:
+ * - Store and manage HTTP headers as key-value pairs
+ * - Handle message body as byte arrays for universal content type support
+ * - Format complete HTTP messages for network transmission
+ * - Provide text/binary body conversion utilities
+ * <p>
+ * Subclasses implement getStartLine() to define request line vs status line format.
+ * Body stored as byte[] to support both text and binary content without data corruption.
+ *
+ * @see HttpRequest
+ * @see HttpResponse
+ */
 public abstract class HttpMessage {
     private Map<String, String> headers;
     private byte[] body;

@@ -14,14 +14,10 @@ import java.util.List;
  * - Map ResultSets to User objects
  * - Return null for "not found" cases, throw SQLException for errors
  * - Use prepared statements for security and performance
- * <p>
- * Design decisions:
- * - Null return for normal "not found" cases vs exceptions for errors
- * - RETURNING clause for insert operations to get generated IDs
- * - Validate actual updates by checking affected row counts
- * - Consistent resource management using try-with-resources
  *
  * @see UserService
+ * @see User
+ * @see DBConnectionManager
  */
 public class UserDAO {
     private final DBConnectionManager dbc = new DBConnectionManager();

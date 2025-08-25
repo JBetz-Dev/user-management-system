@@ -10,15 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * Provides in-memory session storage with automatic cleanup and expiry management.
  * <p>
  * Sessions store minimal data (userId + expiry) to avoid cache coherence issues.
- * All session operations are thread-safe using ConcurrentHashMap.
- * <p>
- * Design decisions:
- * - Store only userId to eliminate stale user data problems
- * - Automatic cleanup every 1000 operations to prevent memory leaks
- * - UUID-based session IDs for security
- * - 60-minute session timeout for balance of security and UX
+ * All session operations are thread-safe using ConcurrentHashMap for concurrent access.
+ * Uses counter-based cleanup (every 1000 operations) and 60-minute session timeout.
  *
  * @see SessionData
+ * @see UserRequestHandler
+ * @see FileRequestHandler
  */
 public class SessionManager {
     private static final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();

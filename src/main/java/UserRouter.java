@@ -8,12 +8,6 @@
  * - Handle path normalization (trailing slash removal)
  * - Provide routing decisions without business logic concerns
  * <p>
- * Design decisions:
- * - Uses segment-based path analysis for precise route matching
- * - Separates routing logic from business logic for better testability
- * - Returns structured route objects rather than direct handler invocation
- * - Supports both session-based and public endpoints through route metadata
- * <p>
  * Supported route patterns:
  * - GET /users -> Get all users (requires session)
  * - POST /users -> Register new user
@@ -21,6 +15,9 @@
  * - POST /users/logout -> Logout current user
  * - PATCH /users/{id}/password -> Change user password (requires session)
  * - PATCH /users/{id}/email -> Change user email (requires session)
+ *
+ * @see UserRoute
+ * @see UserRequestHandler
  */
 public class UserRouter {
 

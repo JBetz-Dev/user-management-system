@@ -6,17 +6,17 @@ import java.util.concurrent.Executors;
 
 /**
  * HTTP server that accepts client connections and manages the complete
- * request-response lifecycle using worker threads. Uses virtual threads
- * for lightweight concurrency.
+ * request-response lifecycle using virtual threads for lightweight concurrency.
  * <p>
  * Responsibilities:
- * - Socket lifecycle management
- * - Request parsing coordination through HttpRequestParser
- * - Response writing (response generation via HttpRequestHandler)
- * - Error handling and logging for connection and parsing failures
- * <p>
- * Design decision: Centralizes I/O concerns while delegating business
- * logic to specialized handlers.
+ * - Accept incoming client connections on port 9000
+ * - Coordinate request parsing through HttpRequestParser
+ * - Delegate response generation to HttpRequestHandler
+ * - Handle I/O operations and resource management
+ * - Centralize error logging for the entire request pipeline
+ *
+ * @see HttpRequestParser
+ * @see HttpRequestHandler
  */
 public class HttpServer {
 

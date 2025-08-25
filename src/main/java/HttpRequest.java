@@ -1,3 +1,16 @@
+/**
+ * HTTP request message containing method, path, version, headers, and body.
+ * Extends HttpMessage to inherit common header and body handling functionality.
+ * Implements HTTP/1.1 protocol specification for request formatting.
+ * <p>
+ * Responsibilities:
+ * - Store HTTP request line components (method, path, version)
+ * - Format request line for HTTP message transmission
+ * - Provide convenient access to request-specific data
+ *
+ * @see HttpMessage
+ * @see HttpRequestParser
+ */
 public class HttpRequest extends HttpMessage {
     private String method;
     private String path;
