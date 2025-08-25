@@ -1,3 +1,13 @@
+/**
+ * Reusable modal dialog component with flexible content and callback support.
+ * Provides programmatic modal creation with customizable actions and styling.
+ *
+ * Responsibilities:
+ * - Create and manage modal dialogs dynamically
+ * - Handle modal lifecycle (show, hide, cleanup)
+ * - Support flexible content (string HTML or DOM elements)
+ * - Provide callback hooks for user interactions (onShow, onConfirm, onClose)
+ */
 class Modal {
 
     show(title, content, options = {}) {

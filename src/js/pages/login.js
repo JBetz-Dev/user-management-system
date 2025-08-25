@@ -5,6 +5,21 @@ import {userService} from "../services/userService.js";
 import {sessionService} from "../services/sessionService.js";
 import {errorService} from "../services/errorService.js";
 
+/**
+ * Login page script handling user authentication workflow.
+ * Manages login form submission and success/error handling.
+ *
+ * Responsibilities:
+ * - Handle login form validation and submission
+ * - Coordinate with userService for authentication
+ * - Manage session creation on successful login
+ * - Redirect users to user area after authentication
+ *
+ * @see {userService}
+ * @see {sessionService}
+ * @see {validator}
+ * @see {errorService}
+ */
 const loginForm = document.getElementById('login-form');
 
 if (loginForm) {

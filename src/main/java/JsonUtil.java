@@ -3,16 +3,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Utility class for JSON parsing and validation operations.
+ * Utility class for basic JSON parsing and validation operations.
  * Provides simple JSON string parsing to field maps and validates required field presence.
  * <p>
  * This is a minimal JSON implementation focused on parsing simple key-value objects
- * from HTTP request bodies. Not intended for complex nested JSON structures.
+ * from HTTP request bodies. Built for learning JSON structure and format.
+ * Not intended for complex nested JSON structures.
  * <p>
- * Design decisions:
- * - Throws IllegalArgumentException for missing fields (unchecked for input validation)
- * - Returns String-to-String maps for simple request body parsing
- * - Handles quoted string values and basic JSON escaping
+ * Required fields validation throws IllegalArgumentException to enforce expected
+ * input and avoid null checking in consuming services.
  *
  * @see UserRequestHandler
  */

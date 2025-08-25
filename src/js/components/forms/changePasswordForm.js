@@ -8,7 +8,23 @@ import {userService} from "../../services/userService.js";
 import {sessionService} from "../../services/sessionService.js";
 import {errorService} from "../../services/errorService.js";
 
+/**
+ * Password change form component for user profile management.
+ * Handles password update workflow with current password verification.
+ *
+ * Responsibilities:
+ * - Create dynamic password change form with requirements display
+ * - Handle form submission and backend integration
+ * - Validate new password against current password
+ * - Clear session and redirect to login on successful change
+ *
+ * @see {modal}
+ * @see {userService}
+ * @see {sessionService}
+ * @see {passwordRequirementsToggler}
+ */
 class ChangePasswordForm {
+
     build() {
         return this.#createChangePasswordForm();
     }

@@ -1,3 +1,17 @@
+/**
+ * Utility functions for creating reusable form elements with consistent styling and behavior.
+ * Provides standardized form component creation for dynamic form building.
+ *
+ * Responsibilities:
+ * - Create form groups with labels and inputs
+ * - Generate form submit buttons with icons
+ * - Provide consistent form element structure and styling
+ * - Support child element injection for extended functionality
+ *
+ * @see {changeEmailForm}
+ * @see {changePasswordForm}
+ * @see {passwordRequirementsToggler}
+ */
 export function createFormGroup(inputId, type, labelText, placeholder, childElements = []) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');

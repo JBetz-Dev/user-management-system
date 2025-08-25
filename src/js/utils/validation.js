@@ -1,6 +1,19 @@
 import {VALIDATION_RULES, ERROR_MESSAGES} from "./constants.js";
 import {toast} from "../components/toast.js";
 
+/**
+ * Client-side input validation utility with user feedback integration.
+ * Validates user input against defined rules and displays appropriate error messages.
+ *
+ * Responsibilities:
+ * - Validate user input fields (username, email, password)
+ * - Check for required field presence
+ * - Display validation error messages via toast notifications
+ * - Mirror backend validation rules for consistency
+ *
+ * @see {toast}
+ * @see {VALIDATION_RULES}
+ */
 class Validator {
 
     validateInput(fieldName, fieldValue) {

@@ -4,6 +4,19 @@ import {userService} from "../services/userService.js";
 import {sessionService} from "../services/sessionService.js";
 import {errorService} from "../services/errorService.js";
 
+/**
+ * Navigation component that manages navbar state based on user authentication.
+ * Handles session-dependent UI visibility and logout functionality.
+ *
+ * Responsibilities:
+ * - Toggle navigation buttons based on authentication state
+ * - Handle user logout workflow
+ * - Prevent duplicate event listener registration
+ * - Coordinate with session management for UI updates
+ *
+ * @see {sessionService}
+ * @see {userService}
+ */
 class Navigation {
 
     initialize() {

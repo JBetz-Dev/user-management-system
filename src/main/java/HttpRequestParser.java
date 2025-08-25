@@ -13,19 +13,15 @@ import java.util.regex.Pattern;
  * - Parse HTTP request line (method, path, version)
  * - Extract and validate HTTP headers
  * - Read request body as byte array based on Content-Length header
- * - Validate all components against HTTP specifications
+ * - Validate all components against HTTP/1.1 specifications
  * <p>
- * Design decisions:
- * - Byte-by-byte header parsing to avoid BufferedReader InputStream consumption issues
- * - Direct binary body reading to preserve data integrity
+ * Additional considerations:
  * - Strict validation: malformed requests result in HttpParsingException
  * - Memory protection: enforces 10MB body size limit
  * - Content-Length required for requests with bodies
- * <p>
- * Security considerations:
- * - Bounds checking on Content-Length to prevent memory exhaustion
- * - Input validation on all HTTP components
- * - No support for chunked encoding (simplified implementation)
+ *
+ * @see HttpRequest
+ * @see HttpParsingException
  */
 public class HttpRequestParser {
     private final HttpRequest request;

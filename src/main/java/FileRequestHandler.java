@@ -6,18 +6,16 @@ import java.util.List;
 /**
  * Handles HTTP requests for static files and resources.
  * Supports both text files (HTML, CSS, JS) and binary files (images, videos).
+ * Implements HTTP/1.1 protocol specification for file serving.
  * <p>
  * Responsibilities:
  * - Serve static files from the filesystem
  * - Set appropriate Content-Type headers based on file type
  * - Enforce session-based access control for restricted paths
  * - Generate HTML error responses for file-related failures
- * <p>
- * Design decisions:
- * - Uses HttpResponseBuilder for consistent response construction
- * - Content-Type detection via Files.probeContentType()
- * - Session validation for restricted path access
- * - Self-contained error handling with HTML responses appropriate for file requests
+ *
+ * @see HttpResponseBuilder
+ * @see SessionManager
  */
 public class FileRequestHandler {
     private final HttpRequest request;

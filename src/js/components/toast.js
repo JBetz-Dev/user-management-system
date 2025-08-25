@@ -1,6 +1,17 @@
 import {TOAST_CONFIG} from "../utils/constants.js";
 
+/**
+ * Toast notification component for user feedback and status messages.
+ * Provides auto-dismissing notifications with different severity levels.
+ *
+ * Responsibilities:
+ * - Display temporary status messages to users
+ * - Handle automatic dismissal with progress indicators
+ * - Support different notification types (success, error, warning, info)
+ * - Manage toast container lifecycle and cleanup
+ */
 class Toast {
+
     constructor() {
         this.counter = 0;
         this.container = null;

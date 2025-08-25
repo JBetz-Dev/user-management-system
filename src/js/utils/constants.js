@@ -1,3 +1,14 @@
+/**
+ * Application constants and configuration values.
+ * Centralizes API endpoints, validation rules, messages, and application settings.
+ *
+ * Responsibilities:
+ * - Define API endpoints and routing configuration
+ * - Store validation regex patterns and requirements
+ * - Provide standardized success and error messages
+ * - Configure toast and application behavior settings
+ * - Ensure consistency across frontend components
+ */
 export const API_CONFIG = {
     BASE_URL: "http://localhost:9000",
     ENDPOINTS: {

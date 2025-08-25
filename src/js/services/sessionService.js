@@ -1,5 +1,18 @@
 import {SESSION_STORAGE_KEYS} from "../utils/constants.js";
 
+/**
+ * Client-side session management service for user authentication state.
+ * Handles session storage operations and user data persistence in browser.
+ *
+ * Responsibilities:
+ * - Store and retrieve user session data from sessionStorage
+ * - Validate active session status
+ * - Clear session data on logout
+ * - Provide consistent session data access across components
+ *
+ * @see {userService}
+ * @see {navigation}
+ */
 class SessionService {
 
     getActiveSession() {

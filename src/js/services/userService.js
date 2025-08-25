@@ -1,5 +1,19 @@
 import {API_CONFIG} from "../utils/constants.js";
 
+/**
+ * Client-side user service for API communication and user operations.
+ * Handles all HTTP requests to the backend user management endpoints.
+ *
+ * Responsibilities:
+ * - Execute user authentication and registration requests
+ * - Handle profile update operations (email, password changes)
+ * - Manage user data retrieval and listing
+ * - Process API responses and error handling
+ * - Coordinate with backend RESTful API endpoints
+ *
+ * @see {sessionService}
+ * @see {errorService}
+ */
 class UserService {
 
     async login(userData) {

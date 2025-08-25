@@ -6,6 +6,21 @@ import {sessionService} from "../services/sessionService.js";
 import {errorService} from "../services/errorService.js";
 import {passwordRequirementsToggler} from "../components/passwordRequirementsToggler.js";
 
+/**
+ * Registration page script handling new user account creation.
+ * Manages registration form submission and password requirements display.
+ *
+ * Responsibilities:
+ * - Handle registration form validation and submission
+ * - Display password requirements for user guidance
+ * - Coordinate with userService for account creation
+ * - Manage session creation and redirect on successful registration
+ *
+ * @see {userService}
+ * @see {sessionService}
+ * @see {validator}
+ * @see {passwordRequirementsToggler}
+ */
 const registerForm = document.getElementById('sign-up-form');
 const passwordFormGroup = document.getElementById('password-form-group');
 

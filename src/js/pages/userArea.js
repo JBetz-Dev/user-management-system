@@ -2,6 +2,20 @@ import {modal} from "../components/modal.js";
 import {userService} from "../services/userService.js";
 import {errorService} from "../services/errorService.js";
 
+/**
+ * User area page script for authenticated user functionality.
+ * Handles user list display and administrative operations.
+ *
+ * Responsibilities:
+ * - Handle user list retrieval and display
+ * - Create dynamic user list components
+ * - Display user information in modal format
+ * - Coordinate with userService for data operations
+ *
+ * @see {userService}
+ * @see {modal}
+ * @see {errorService}
+ */
 const listUsersButton = document.getElementById('list-users-btn');
 
 if (listUsersButton) {

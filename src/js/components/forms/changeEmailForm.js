@@ -7,7 +7,23 @@ import {errorService} from "../../services/errorService.js";
 import {userService} from "../../services/userService.js";
 import {createFormGroup, createFormSubmitButton} from "./formElements.js";
 
+/**
+ * Email change form component for user profile management.
+ * Handles email update workflow with password verification.
+ *
+ * Responsibilities:
+ * - Create dynamic email change form with validation
+ * - Handle form submission and backend integration
+ * - Validate new email against current email
+ * - Update session data and UI on successful change
+ *
+ * @see {modal}
+ * @see {userService}
+ * @see {sessionService}
+ * @see {validator}
+ */
 class ChangeEmailForm {
+
     build() {
         return this.#createChangeEmailForm();
     }

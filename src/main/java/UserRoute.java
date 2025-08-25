@@ -6,12 +6,9 @@
  * - Define all available user management endpoints
  * - Specify session authentication requirements per route
  * - Provide metadata for consistent authorization handling
- * <p>
- * Design decisions:
- * - Each route declares its own session requirements for explicit auth control
- * - Enum approach ensures compile-time safety for route handling
- * - Session requirements embedded in route definition for DRY principle
- * - NOT_FOUND route for handling of unmatched requests
+ *
+ * @see UserRouter
+ * @see UserRequestHandler
  */
 public enum UserRoute {
     LOGIN(false),
