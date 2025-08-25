@@ -46,19 +46,32 @@ This was also my first exploration of ES6 modules and modular frontend architect
 - **File Serving**: Static file delivery with session-based access control
 - **Error Handling**: Comprehensive error flows with user-friendly messaging
 
-## Future Roadmap
+## Architecture & Learning Outcomes
 
-**Technical Refinements:**
-- Improved routing and flow control
-- Connection pooling for database operations
-- Extracted error handling middleware
-- Enhanced frontend modal and component systems
+**Technical Focus:**
+- **Modularization**: Component-based frontend, layered backend architecture
+- **DRY Principle**: Reusable form components, shared HTTP message handling
+- **Single Responsibility**: Separated concerns across services, DAOs, and handlers
+- **Layered Architecture**: Clear separation between HTTP handling, business logic, and data access
 
-**Feature Additions:**
-- Admin roles and user management
-- Password reset functionality
-- Email notifications
-- Enhanced user area functionality
+**Learning Outcomes:**
+- **HTTP Protocol**: Request/response structure, headers, status codes, binary content handling
+- **JSON Processing**: Structure, parsing, and serialization without external libraries
+- **Web Server Architecture**: Connection handling, routing, session management
+- **Full-Stack Integration**: Frontend-backend communication, state management, error flows
+- **ES6 Modules**: Component organization, import/export patterns, modular design
+
+## Ongoing Learning & Technical Improvements
+
+This project also serves as a documenation of continuous learning. Identified technical debt, architectural improvements, and learning opportunities are tracked as [GitHub Issues](../../issues).
+
+Each issue represents either:
+- **Technical Debt:** Areas for architectural improvement or code quality enhancement
+- **Learning Opportunities:** Implementation of new concepts or best practices
+- **Feature Enhancements:** Additional functionality to explore new technical domains
+- **Infrastructure:** Deployment, testing, and development workflow improvements
+
+This approach serves to create a transparent record of technical decision-making and continuous improvement.
 
 ## Getting Started
 
