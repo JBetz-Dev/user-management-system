@@ -63,7 +63,7 @@ This was also my first exploration of ES6 modules and modular frontend architect
 
 ## Ongoing Learning & Technical Improvements
 
-This project also serves as a documenation of continuous learning. Identified technical debt, architectural improvements, and learning opportunities are tracked as [GitHub Issues](../../issues).
+This project serves as a continuous learning laboratory. The [Issues](../../issues) backlog reflects ongoing learning opportunities, architectural improvements, identified technical debt, and systematic exploration of software engineering concepts.
 
 Each issue represents either:
 - **Technical Debt:** Areas for architectural improvement or code quality enhancement
