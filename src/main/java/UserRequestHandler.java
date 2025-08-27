@@ -93,7 +93,7 @@ public class UserRequestHandler {
             setActiveSessionWithCookie(authenticatedUser.getId());
 
             return getSuccessfulResponse(200, authenticatedUser.toJson());
-        } catch (IllegalArgumentException e) {
+        } catch (JsonUtil.MissingRequiredFieldException e) {
             return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAuthenticationException e) {
             return getErrorResponse(401, "authentication_failed");
@@ -123,7 +123,7 @@ public class UserRequestHandler {
             setActiveSessionWithCookie(registeredUser.getId());
 
             return getSuccessfulResponse(201, registeredUser.toJson());
-        } catch (IllegalArgumentException e) {
+        } catch (JsonUtil.MissingRequiredFieldException | ValidationException e) {
             return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAlreadyExistsException e) {
             return getErrorResponse(409, "user_already_exists");
@@ -157,7 +157,7 @@ public class UserRequestHandler {
             setActiveSessionWithCookie(userId);
 
             return getSuccessfulResponse(200, updatedUser.toJson());
-        } catch (IllegalArgumentException e) {
+        } catch (JsonUtil.MissingRequiredFieldException | ValidationException | NumberFormatException e) {
             return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAuthenticationException e) {
             return getErrorResponse(401, "authentication_failed");
@@ -189,7 +189,7 @@ public class UserRequestHandler {
             setActiveSessionWithCookie(userId);
 
             return getSuccessfulResponse(200, updatedUser.toJson());
-        } catch (IllegalArgumentException e) {
+        } catch (JsonUtil.MissingRequiredFieldException | ValidationException | NumberFormatException e) {
             return getErrorResponse(400, "invalid_input");
         } catch (UserService.UserAuthenticationException e) {
             return getErrorResponse(401, "authentication_failed");

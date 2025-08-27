@@ -10,20 +10,21 @@ import java.util.Map;
  * from HTTP request bodies. Built for learning JSON structure and format.
  * Not intended for complex nested JSON structures.
  * <p>
- * Required fields validation throws IllegalArgumentException to enforce expected
+ * Required fields validation throws MissingRequiredFieldException to enforce expected
  * input and avoid null checking in consuming services.
  *
  * @see UserRequestHandler
  */
 public class JsonUtil {
 
-    public static Map<String, String> parseJsonWithRequiredFields(String requestBody, List<String> requiredFields) {
+    public static Map<String, String> parseJsonWithRequiredFields(String requestBody, List<String> requiredFields)
+            throws MissingRequiredFieldException {
         Map<String, String> providedFields = parseJsonToFieldMap(requestBody);
 
         for (String requiredField : requiredFields) {
             String providedField = providedFields.get(requiredField);
             if (providedField == null || providedField.trim().isEmpty()) {
-                throw new IllegalArgumentException("Required field not found: " + requiredField);
+                throw new MissingRequiredFieldException("Required field not found: " + requiredField);
             }
         }
 
@@ -57,5 +58,11 @@ public class JsonUtil {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    public static class MissingRequiredFieldException extends Exception {
+        public MissingRequiredFieldException(String message) {
+            super(message);
+        }
     }
 }
