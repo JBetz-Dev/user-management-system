@@ -46,21 +46,6 @@ This was also my first exploration of ES6 modules and modular frontend architect
 - **File Serving**: Static file delivery with session-based access control
 - **Error Handling**: Comprehensive error flows with user-friendly messaging
 
-## Architecture & Learning Outcomes
-
-**Technical Focus:**
-- **Modularization**: Component-based frontend, layered backend architecture
-- **DRY Principle**: Reusable form components, shared HTTP message handling
-- **Single Responsibility**: Separated concerns across services, DAOs, and handlers
-- **Layered Architecture**: Clear separation between HTTP handling, business logic, and data access
-
-**Learning Outcomes:**
-- **HTTP Protocol**: Request/response structure, headers, status codes, binary content handling
-- **JSON Processing**: Structure, parsing, and serialization without external libraries
-- **Web Server Architecture**: Connection handling, routing, session management
-- **Full-Stack Integration**: Frontend-backend communication, state management, error flows
-- **ES6 Modules**: Component organization, import/export patterns, modular design
-
 ## Ongoing Learning & Technical Improvements
 
 This project serves as a continuous learning laboratory. The [Issues](../../issues) backlog reflects ongoing learning opportunities, architectural improvements, identified technical debt, and systematic exploration of software engineering concepts.
