@@ -40,8 +40,8 @@ public class UserService {
         return userDAO.deleteUserById(id);
     }
 
-    public User registerNewUser(String username, String email, String password)
-            throws SQLException, UserAlreadyExistsException, EmailAlreadyExistsException {
+    public User registerNewUser(String username, String email, String password) throws SQLException,
+            UserAlreadyExistsException, EmailAlreadyExistsException, ValidationException {
         String validatedUsername = UserValidationUtil.validateUsername(username);
         String validatedEmail = UserValidationUtil.validateEmail(email);
 
@@ -71,8 +71,8 @@ public class UserService {
         return user;
     }
 
-    public User changeUsername(int userId, String username, String password)
-            throws SQLException, UserAuthenticationException, UserAlreadyExistsException {
+    public User changeUsername(int userId, String username, String password) throws SQLException,
+            UserAuthenticationException, UserAlreadyExistsException, ValidationException {
         String validatedUsername = UserValidationUtil.validateUsername(username);
         User user = getUserById(userId);
 
@@ -93,7 +93,7 @@ public class UserService {
     }
 
     public User changePassword(int userId, String oldPassword, String newPassword)
-            throws SQLException, UserAuthenticationException {
+            throws SQLException, UserAuthenticationException, ValidationException {
         User user = getUserById(userId);
 
         if (user == null || !user.verifyPassword(oldPassword)) {
@@ -111,8 +111,8 @@ public class UserService {
         return user;
     }
 
-    public User changeEmail(int userId, String email, String password)
-            throws SQLException, UserAuthenticationException, EmailAlreadyExistsException {
+    public User changeEmail(int userId, String email, String password) throws SQLException,
+            UserAuthenticationException, EmailAlreadyExistsException, ValidationException {
         String validatedEmail = UserValidationUtil.validateEmail(email);
         User user = getUserById(userId);
 
